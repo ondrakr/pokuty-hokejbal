@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { Hrac, Pokuta } from '../../types';
 import SpravHracu from './SpravHracu';
 import SpravPokut from './SpravPokut';
@@ -9,10 +10,10 @@ import MobileHeader from './MobileHeader';
 interface Props {
   initialHraci: Hrac[];
   initialPokuty: Pokuta[];
-  initialPlatby: any[];
+  initialPlatby: unknown[];
 }
 
-export default function AdminPage({ initialHraci, initialPokuty, initialPlatby }: Props) {
+export default function AdminPage({ initialHraci, initialPokuty }: Props) {
   const [activeTab, setActiveTab] = useState<'hraci' | 'pokuty'>('hraci');
 
   return (
@@ -57,12 +58,12 @@ export default function AdminPage({ initialHraci, initialPokuty, initialPlatby }
 
           {/* Mobile Back Button */}
           <div className="mt-6">
-            <a
+            <Link
               href="/"
               className="w-full bg-gray-600 hover:bg-gray-700 text-white font-bold py-4 px-4 rounded-xl flex items-center justify-center gap-2 shadow-lg"
             >
               ⬅️ Zpět na hlavní stránku
-            </a>
+            </Link>
           </div>
         </div>
       </div>
@@ -111,12 +112,12 @@ export default function AdminPage({ initialHraci, initialPokuty, initialPlatby }
 
             {/* Desktop Back Button */}
             <div className="p-6 border-t bg-gray-50">
-              <a
+              <Link
                 href="/"
                 className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg"
               >
                 ⬅️ Zpět na hlavní stránku
-              </a>
+              </Link>
             </div>
           </div>
         </div>

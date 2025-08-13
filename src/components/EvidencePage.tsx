@@ -16,7 +16,7 @@ interface Props {
 
 export default function EvidencePage({ initialHraci, initialPokuty }: Props) {
   const [hraci] = useState<Hrac[]>(initialHraci);
-  const [pokuty, setPokuty] = useState<Pokuta[]>(initialPokuty);
+  const [pokuty] = useState<Pokuta[]>(initialPokuty);
   const [hraciSPokutami, setHraciSPokutami] = useState<HracSPokutami[]>([]);
   const [showPriceList, setShowPriceList] = useState(false);
   const [platebniModal, setPlatebniModal] = useState<{
@@ -38,10 +38,10 @@ export default function EvidencePage({ initialHraci, initialPokuty }: Props) {
 
       return hraci.map(hrac => {
         const hracovePokuty = pokuty.filter(pokuta => pokuta.hracId === hrac.id);
-        const hracovePlatby = platby.filter((platba: any) => platba.hracId === hrac.id);
+        const hracovePlatby = platby.filter((platba: unknown) => (platba as {hracId: number}).hracId === hrac.id);
         
         const celkovaCastka = hracovePokuty.reduce((sum, pokuta) => sum + pokuta.castka, 0);
-        const zaplaceno = hracovePlatby.reduce((sum: number, platba: any) => sum + platba.castka, 0);
+        const zaplaceno = hracovePlatby.reduce((sum: number, platba: unknown) => sum + (platba as {castka: number}).castka, 0);
         const zbyva = celkovaCastka - zaplaceno;
         
         let status: 'vse_zaplaceno' | 'nic_nezaplaceno' | 'neco_chybi';
@@ -84,7 +84,7 @@ export default function EvidencePage({ initialHraci, initialPokuty }: Props) {
       setHraciSPokutami(data);
     };
     loadData();
-  }, [pokuty, hraci]);
+  }, [pokuty, hraci, vypocitejHraceSPokutami]);
 
   // Funkce pro obnovení dat po přidání pokuty
   const handlePokutaPridana = () => {

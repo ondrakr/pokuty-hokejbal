@@ -69,7 +69,7 @@ export default function SpravHracu({ hraci, onDataChange }: Props) {
       } else {
         alert('Chyba při mazání hráče');
       }
-    } catch (error) {
+    } catch {
       alert('Chyba při mazání hráče');
     }
   };
