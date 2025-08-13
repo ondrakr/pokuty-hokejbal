@@ -1,0 +1,19 @@
+{
+  "name": "Pokuty Hokejbal JUNIOŘI",
+  "short_name": "Pokuty HB",
+  "description": "Evidence pokut hokejbalového týmu JUNIOŘI - příspěvky na rozlučku",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f3f4f6",
+  "theme_color": "#2563eb",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "any",
+      "type": "image/x-icon"
+    }
+  ],
+  "categories": ["sports", "finance", "productivity"],
+  "lang": "cs"
+}

@@ -1,0 +1,66 @@
+[
+  {
+    "id": 1,
+    "hracId": 1,
+    "typ": "První gól",
+    "castka": 100,
+    "datum": "2024-01-15",
+    "zaplaceno": false
+  },
+  {
+    "id": 2,
+    "hracId": 1,
+    "typ": "Vítězný gól",
+    "castka": 20,
+    "datum": "2024-01-20",
+    "zaplaceno": true
+  },
+  {
+    "id": 3,
+    "hracId": 2,
+    "typ": "První start",
+    "castka": 100,
+    "datum": "2024-01-18",
+    "zaplaceno": false
+  },
+  {
+    "id": 4,
+    "hracId": 3,
+    "typ": "Vychytaná nula",
+    "castka": 100,
+    "datum": "2024-01-22",
+    "zaplaceno": false
+  },
+  {
+    "id": 5,
+    "hracId": 4,
+    "typ": "Hattrick",
+    "castka": 200,
+    "datum": "2024-01-25",
+    "zaplaceno": false
+  },
+  {
+    "id": 6,
+    "hracId": 5,
+    "typ": "Poprvé kapitán",
+    "castka": 200,
+    "datum": "2024-01-28",
+    "zaplaceno": true
+  },
+  {
+    "id": 7,
+    "hracId": 1,
+    "typ": "První asistence",
+    "castka": 50,
+    "datum": "2024-02-01",
+    "zaplaceno": false
+  },
+  {
+    "id": 8,
+    "hracId": 3,
+    "typ": "Obdržený gól",
+    "castka": 2,
+    "datum": "2024-02-05",
+    "zaplaceno": false
+  }
+]

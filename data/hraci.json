@@ -1,0 +1,102 @@
+[
+  {
+    "id": 1,
+    "jmeno": "Vychytil Petr",
+    "role": "trener"
+  },
+  {
+    "id": 3,
+    "jmeno": "Bár Oldřich",
+    "role": "hrac"
+  },
+  {
+    "id": 4,
+    "jmeno": "Bednář Jakub",
+    "role": "hrac"
+  },
+  {
+    "id": 5,
+    "jmeno": "Červený Vojtěch",
+    "role": "hrac"
+  },
+  {
+    "id": 6,
+    "jmeno": "Havlásek Jakub",
+    "role": "hrac"
+  },
+  {
+    "id": 7,
+    "jmeno": "Kačurik David",
+    "role": "hrac"
+  },
+  {
+    "id": 8,
+    "jmeno": "Kloupar Miroslav",
+    "role": "hrac"
+  },
+  {
+    "id": 9,
+    "jmeno": "Kopecký Miroslav",
+    "role": "hrac"
+  },
+  {
+    "id": 10,
+    "jmeno": "Krejčí Ondřej",
+    "role": "hrac"
+  },
+  {
+    "id": 11,
+    "jmeno": "Lux Tomáš",
+    "role": "hrac"
+  },
+  {
+    "id": 12,
+    "jmeno": "Marek Petr",
+    "role": "hrac"
+  },
+  {
+    "id": 13,
+    "jmeno": "Neruda Martin",
+    "role": "hrac"
+  },
+  {
+    "id": 14,
+    "jmeno": "Pavlásek Dušan",
+    "role": "golman"
+  },
+  {
+    "id": 16,
+    "jmeno": "Pražák Ondřej",
+    "role": "hrac"
+  },
+  {
+    "id": 17,
+    "jmeno": "Rous Matěj",
+    "role": "hrac"
+  },
+  {
+    "id": 18,
+    "jmeno": "Schwach Petr",
+    "role": "hrac"
+  },
+  {
+    "id": 20,
+    "jmeno": "Šafář Pavel",
+    "role": "hrac"
+  },
+  {
+    "id": 21,
+    "jmeno": "Šmídek Jaroslav",
+    "role": "hrac"
+  },
+  {
+    "id": 22,
+    "jmeno": "Šťovíček Jáchym",
+    "role": "hrac"
+  },
+  {
+    "id": 23,
+    "jmeno": "Vencl Radek",
+    "role": "hrac"
+  }
+]
