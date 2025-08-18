@@ -68,10 +68,6 @@ export default function EvidencePage({ initialHraci, initialPokuty, isLoggedIn =
     ? hraciSPokutami 
     : hraciSPokutami.filter(hrac => hrac.pokuty.length > 0); // Nepřihlášeným pouze hráče s pokutami
   
-  console.log('🔍 EvidencePage - isLoggedIn:', isLoggedIn);
-  console.log('🔍 EvidencePage - všichni hráči:', hraciSPokutami.length);
-  console.log('🔍 EvidencePage - filtrovaní hráči:', filteredHraci.length);
-  
   const sortedHraci = [...filteredHraci].sort((a, b) => b.zbyva - a.zbyva);
 
   return (
@@ -179,13 +175,11 @@ export default function EvidencePage({ initialHraci, initialPokuty, isLoggedIn =
       <div className="hidden lg:block">
         <div className="px-3">
           {/* Desktop Header s informací o režimu */}
-          <div className="mb-6 flex justify-between items-center">
-            {isLoggedIn ? (
-              <div className="text-center flex-1">
-                <PridatPokutu hraci={hraci} onPokutaPridana={handlePokutaPridana} />
-              </div>
-            )}
-          </div>
+          {isLoggedIn && (
+            <div className="mb-6 text-center">
+              <PridatPokutu hraci={hraci} onPokutaPridana={handlePokutaPridana} />
+            </div>
+          )}
           
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             {/* Levý sloupec - Ceník pokut */}
