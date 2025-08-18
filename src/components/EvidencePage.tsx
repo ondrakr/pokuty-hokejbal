@@ -131,7 +131,7 @@ export default function EvidencePage({ initialHraci, initialPokuty, isLoggedIn =
           <div className="space-y-4">
             <div className="flex justify-between items-center mb-3">
               <h2 className="font-bold text-gray-800 text-lg">
-                👥 Seznam hráčů ({sortedHraci.length})
+                👥 {isLoggedIn ? `Seznam hráčů (${sortedHraci.length})` : `Hráči s pokutami (${sortedHraci.length})`}
               </h2>
               {!isLoggedIn && (
                 <div className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
