@@ -84,9 +84,7 @@ export default function Home() {
             <h1 className="text-2xl font-bold text-gray-900 mb-1">
               🏒 Pokuty Junioři
             </h1>
-            <p className="text-sm text-gray-600">
-              Příspěvky na rozlučku na konci sezóny
-            </p>
+           
             
             {/* Tlačítko přihlášení/administrace */}
             <div className="absolute top-0 right-0">

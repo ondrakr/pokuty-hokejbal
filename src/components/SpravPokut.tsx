@@ -18,8 +18,8 @@ export default function SpravPokut({ onDataChange }: Props) {
   const [loading, setLoading] = useState(true);
 
   const [editingId, setEditingId] = useState<number | null>(null);
-  const [editingData, setEditingData] = useState({ nazev: '', cena: 0, popis: '' });
-  const [newPokuta, setNewPokuta] = useState({ nazev: '', cena: 0, popis: '' });
+  const [editingData, setEditingData] = useState({ nazev: '', cena: 0 });
+  const [newPokuta, setNewPokuta] = useState({ nazev: '', cena: 0 });
   const [showAddForm, setShowAddForm] = useState(false);
 
   // Načtení typů pokut z API
@@ -47,14 +47,13 @@ export default function SpravPokut({ onDataChange }: Props) {
     setEditingId(pokuta.id);
     setEditingData({
       nazev: pokuta.nazev,
-      cena: pokuta.cena,
-      popis: pokuta.popis || ''
+      cena: pokuta.cena
     });
   };
 
   const handleCancelEdit = () => {
     setEditingId(null);
-    setEditingData({ nazev: '', cena: 0, popis: '' });
+    setEditingData({ nazev: '', cena: 0 });
   };
 
   const handleSave = async () => {
@@ -73,14 +72,14 @@ export default function SpravPokut({ onDataChange }: Props) {
           id: editingId, 
           nazev: editingData.nazev, 
           cena: editingData.cena, 
-          popis: editingData.popis 
+          popis: '' 
         }),
       });
 
       if (response.ok) {
         await loadPokutyTypy();
         setEditingId(null);
-        setEditingData({ nazev: '', cena: 0, popis: '' });
+        setEditingData({ nazev: '', cena: 0 });
       } else {
         alert('Chyba při aktualizaci typu pokuty');
       }
@@ -120,7 +119,7 @@ export default function SpravPokut({ onDataChange }: Props) {
 
         if (response.ok) {
           await loadPokutyTypy();
-          setNewPokuta({ nazev: '', cena: 0, popis: '' });
+          setNewPokuta({ nazev: '', cena: 0 });
           setShowAddForm(false);
         } else {
           alert('Chyba při přidávání typu pokuty');
@@ -156,7 +155,7 @@ export default function SpravPokut({ onDataChange }: Props) {
       {showAddForm && (
         <div className="bg-white rounded-lg shadow-md p-6">
           <h3 className="text-lg font-bold text-gray-900 mb-4">Přidat nový typ pokuty</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Název</label>
               <input
@@ -175,16 +174,6 @@ export default function SpravPokut({ onDataChange }: Props) {
                 onChange={(e) => setNewPokuta(prev => ({ ...prev, cena: parseInt(e.target.value) || 0 }))}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md text-black"
                 placeholder="0"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Popis</label>
-              <input
-                type="text"
-                value={newPokuta.popis}
-                onChange={(e) => setNewPokuta(prev => ({ ...prev, popis: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md text-black"
-                placeholder="Popis pokuty"
               />
             </div>
           </div>
@@ -218,9 +207,6 @@ export default function SpravPokut({ onDataChange }: Props) {
                   Cena
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Popis
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Akce
                 </th>
               </tr>
@@ -252,19 +238,6 @@ export default function SpravPokut({ onDataChange }: Props) {
                       />
                     ) : (
                       <div className="text-sm font-bold text-blue-600">{pokuta.cena} Kč</div>
-                    )}
-                  </td>
-                  <td className="px-6 py-4">
-                    {editingId === pokuta.id ? (
-                      <input
-                        type="text"
-                        value={editingData.popis}
-                        onChange={(e) => setEditingData(prev => ({ ...prev, popis: e.target.value }))}
-                        className="w-full px-2 py-1 border border-gray-300 rounded text-black"
-                        placeholder="Popis pokuty"
-                      />
-                    ) : (
-                      <div className="text-sm text-gray-600">{pokuta.popis}</div>
                     )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">

@@ -118,19 +118,27 @@ export default function Admin() {
   // Hlavní admin stránka
   return (
     <main className="min-h-screen bg-gray-100">
-      {/* Header s logout tlačítkem */}
+      {/* Header s navigačními tlačítky */}
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <h1 className="text-xl font-semibold text-gray-900">
               🛠️ Administrace - Pokuty Junioři
             </h1>
-            <button
-              onClick={handleLogout}
-              className="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-md text-sm transition duration-200"
-            >
-              Odhlásit se
-            </button>
+            <div className="flex gap-3">
+              <a
+                href="/"
+                className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md text-sm transition duration-200 flex items-center gap-2"
+              >
+                🏠 Hlavní stránka
+              </a>
+              <button
+                onClick={handleLogout}
+                className="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-md text-sm transition duration-200"
+              >
+                Odhlásit se
+              </button>
+            </div>
           </div>
         </div>
       </div>
