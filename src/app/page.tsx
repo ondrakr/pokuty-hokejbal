@@ -25,13 +25,16 @@ export default function Home() {
         
         if (hoursPassed <= 24) {
           setIsLoggedIn(true);
+          return;
         } else {
           // Přihlášení vypršelo
           localStorage.removeItem('admin_logged_in');
           localStorage.removeItem('admin_login_time');
-          setIsLoggedIn(false);
         }
       }
+      
+      // Pokud není přihlášen nebo přihlášení vypršelo
+      setIsLoggedIn(false);
     };
 
     checkLogin();
