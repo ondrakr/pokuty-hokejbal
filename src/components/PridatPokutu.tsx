@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { Hrac } from '../../types';
+import { useState, useEffect } from 'react';
+import { Hrac, PokutaTyp } from '../../types';
 
 interface Props {
   hraci: Hrac[];
@@ -9,46 +9,56 @@ interface Props {
 }
 
 interface PokutaItem {
-  typ: string;
+  id: number;
+  nazev: string;
   selected: boolean;
   quantity?: number;
   castka: number;
   vlastniCastka?: number; // Vlastní částka zadaná uživatelem
+  hasQuantity: boolean;
+  unit?: string;
 }
-
-const typyPokut: Record<string, { castka: number; hasQuantity: boolean; unit?: string }> = {
-  'První start': { castka: 100, hasQuantity: false },
-  'První gól': { castka: 100, hasQuantity: false },
-  'První asistence': { castka: 50, hasQuantity: false },
-  'Hattrick': { castka: 200, hasQuantity: false },
-  'Desátý gól': { castka: 50, hasQuantity: false },
-  'Vyšší trest - faul': { castka: 100, hasQuantity: false },
-  'Vyšší trest - nesportovní chování': { castka: 200, hasQuantity: false },
-  'Neomluvený pozdní příchod na zápas': { castka: 5, hasQuantity: true, unit: 'minut' },
-  'Poprvé kapitán': { castka: 200, hasQuantity: false },
-  'Poprvé asistent': { castka: 100, hasQuantity: false },
-  'Vítězný gól': { castka: 20, hasQuantity: false },
-  'Nesplněný trest (flašky, míčky, ...)': { castka: 100, hasQuantity: false },
-  'Trest pro trenéra': { castka: 500, hasQuantity: false },
-  'Obdržený gól': { castka: 2, hasQuantity: true, unit: 'gólů' },
-  'Vychytaná nula': { castka: 100, hasQuantity: false }
-};
 
 export default function PridatPokutu({ hraci, onPokutaPridana }: Props) {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedHracId, setSelectedHracId] = useState('');
-  const [pokuty, setPokuty] = useState<Record<string, PokutaItem>>(
-    Object.keys(typyPokut).reduce((acc, typ) => {
-      acc[typ] = {
-        typ,
-        selected: false,
-        quantity: typyPokut[typ].hasQuantity ? 1 : undefined,
-        castka: typyPokut[typ].castka
-      };
-      return acc;
-    }, {} as Record<string, PokutaItem>)
-  );
+  const [pokuty, setPokuty] = useState<Record<number, PokutaItem>>({});
   const [loading, setLoading] = useState(false);
+  const [typyPokutLoading, setTypyPokutLoading] = useState(true);
+
+  // Načtení typů pokut z databáze
+  useEffect(() => {
+    const loadTypyPokut = async () => {
+      try {
+        const response = await fetch('/api/pokuty-typy');
+        if (response.ok) {
+          const typyPokut: PokutaTyp[] = await response.json();
+          
+          // Převedeme na náš formát
+          const pokutyMap: Record<number, PokutaItem> = {};
+          typyPokut.forEach((typ) => {
+            pokutyMap[typ.id] = {
+              id: typ.id,
+              nazev: typ.nazev,
+              selected: false,
+              quantity: typ.has_quantity ? 1 : undefined,
+              castka: typ.cena,
+              hasQuantity: typ.has_quantity || false,
+              unit: typ.unit
+            };
+          });
+          
+          setPokuty(pokutyMap);
+        }
+      } catch (error) {
+        console.error('Chyba při načítání typů pokut:', error);
+      } finally {
+        setTypyPokutLoading(false);
+      }
+    };
+
+    loadTypyPokut();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -79,7 +89,7 @@ export default function PridatPokutu({ hraci, onPokutaPridana }: Props) {
           },
           body: JSON.stringify({
             hracId: selectedHracId,
-            typ: pokuta.typ,
+            typ: pokuta.nazev,
             castka: finalCastka,
           }),
         });
@@ -91,17 +101,20 @@ export default function PridatPokutu({ hraci, onPokutaPridana }: Props) {
         }
       }
 
-      // Reset formuláře
+      // Reset formuláře - resetujeme jen selected stavy
       setSelectedHracId('');
-      setPokuty(Object.keys(typyPokut).reduce((acc, typ) => {
-        acc[typ] = {
-          typ,
-          selected: false,
-          quantity: typyPokut[typ].hasQuantity ? 1 : undefined,
-          castka: typyPokut[typ].castka
-        };
-        return acc;
-      }, {} as Record<string, PokutaItem>));
+      setPokuty(prev => {
+        const resetPokuty = { ...prev };
+        Object.keys(resetPokuty).forEach(id => {
+          resetPokuty[parseInt(id)] = {
+            ...resetPokuty[parseInt(id)],
+            selected: false,
+            quantity: resetPokuty[parseInt(id)].hasQuantity ? 1 : undefined,
+            vlastniCastka: undefined
+          };
+        });
+        return resetPokuty;
+      });
       setIsOpen(false);
       onPokutaPridana();
     } catch (error) {
@@ -111,31 +124,31 @@ export default function PridatPokutu({ hraci, onPokutaPridana }: Props) {
     }
   };
 
-  const togglePokuta = (typ: string) => {
+  const togglePokuta = (id: number) => {
     setPokuty(prev => ({
       ...prev,
-      [typ]: {
-        ...prev[typ],
-        selected: !prev[typ].selected
+      [id]: {
+        ...prev[id],
+        selected: !prev[id].selected
       }
     }));
   };
 
-  const updateQuantity = (typ: string, quantity: number) => {
+  const updateQuantity = (id: number, quantity: number) => {
     setPokuty(prev => ({
       ...prev,
-      [typ]: {
-        ...prev[typ],
+      [id]: {
+        ...prev[id],
         quantity: Math.max(1, quantity)
       }
     }));
   };
 
-  const updateVlastniCastka = (typ: string, castka: number) => {
+  const updateVlastniCastka = (id: number, castka: number) => {
     setPokuty(prev => ({
       ...prev,
-      [typ]: {
-        ...prev[typ],
+      [id]: {
+        ...prev[id],
         vlastniCastka: Math.max(0, castka)
       }
     }));
@@ -210,111 +223,117 @@ export default function PridatPokutu({ hraci, onPokutaPridana }: Props) {
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Vyberte typy pokut
                   </label>
-                  <div className="max-h-60 overflow-y-auto border border-gray-200 rounded-md p-2 space-y-2">
-                    {Object.entries(typyPokut).map(([typ, config]) => {
-                      const pokuta = pokuty[typ];
-                      // Použijeme vlastní částku pokud je zadaná, jinak výchozí částku
-                      const baseCastka = pokuta.vlastniCastka !== undefined ? pokuta.vlastniCastka : config.castka;
-                      const finalAmount = pokuta.quantity ? baseCastka * pokuta.quantity : baseCastka;
+                  {typyPokutLoading ? (
+                    <div className="text-center py-4">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600 mx-auto"></div>
+                      <p className="text-gray-600 mt-2">Načítám typy pokut...</p>
+                    </div>
+                  ) : (
+                    <div className="max-h-60 overflow-y-auto border border-gray-200 rounded-md p-2 space-y-2">
+                      {Object.values(pokuty).map((pokuta) => {
+                        // Použijeme vlastní částku pokud je zadaná, jinak výchozí částku
+                        const baseCastka = pokuta.vlastniCastka !== undefined ? pokuta.vlastniCastka : pokuta.castka;
+                        const finalAmount = pokuta.quantity ? baseCastka * pokuta.quantity : baseCastka;
                       
-                      // Zjistíme roli vybraného hráče
-                      const selectedHrac = hraci.find(h => h.id.toString() === selectedHracId);
-                      const isTrener = selectedHrac?.role === 'trener';
+                        // Zjistíme roli vybraného hráče
+                        const selectedHrac = hraci.find(h => h.id.toString() === selectedHracId);
+                        const isTrener = selectedHrac?.role === 'trener';
+                        
+                        // Pokud je trenér, zobrazíme jen "Trest pro trenéra"
+                        if (isTrener && pokuta.nazev !== 'Trest pro trenéra') {
+                          return null;
+                        }
                       
-                      // Pokud je trenér, zobrazíme jen "Trest pro trenéra"
-                      if (isTrener && typ !== 'Trest pro trenéra') {
-                        return null;
-                      }
-                      
-                      return (
-                        <div key={typ} className="p-2 bg-gray-50 rounded">
-                          <div className="flex items-center justify-between mb-2">
-                            <div className="flex items-center gap-2">
-                              <input
-                                type="checkbox"
-                                id={typ}
-                                checked={pokuta.selected}
-                                onChange={() => togglePokuta(typ)}
-                                className="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded"
-                              />
-                              <label htmlFor={typ} className="text-sm text-gray-900 cursor-pointer">
-                                {typ}
-                              </label>
-                            </div>
+                        return (
+                          <div key={pokuta.id} className="p-2 bg-gray-50 rounded">
+                            <div className="flex items-center justify-between mb-2">
+                              <div className="flex items-center gap-2">
+                                <input
+                                  type="checkbox"
+                                  id={`pokuta-${pokuta.id}`}
+                                  checked={pokuta.selected}
+                                  onChange={() => togglePokuta(pokuta.id)}
+                                  className="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded"
+                                />
+                                <label htmlFor={`pokuta-${pokuta.id}`} className="text-sm text-gray-900 cursor-pointer">
+                                  {pokuta.nazev}
+                                </label>
+                              </div>
                             
-                            <div className="flex items-center gap-2">
-                              {config.hasQuantity && pokuta.selected && (
-                                <div className="flex items-center gap-1">
-                                  <input
-                                    type="number"
-                                    min="1"
-                                    value={pokuta.quantity || 1}
-                                    onChange={(e) => updateQuantity(typ, parseInt(e.target.value) || 1)}
-                                    className="w-16 p-1 text-xs border border-gray-300 rounded text-black"
-                                  />
-                                  <span className="text-xs text-gray-500">{config.unit}</span>
-                                </div>
-                              )}
-                              <span className="text-sm font-semibold text-gray-900 min-w-[60px] text-right">
-                                {finalAmount} Kč
-                              </span>
+                              <div className="flex items-center gap-2">
+                                {pokuta.hasQuantity && pokuta.selected && (
+                                  <div className="flex items-center gap-1">
+                                    <input
+                                      type="number"
+                                      min="1"
+                                      value={pokuta.quantity || 1}
+                                      onChange={(e) => updateQuantity(pokuta.id, parseInt(e.target.value) || 1)}
+                                      className="w-16 p-1 text-xs border border-gray-300 rounded text-black"
+                                    />
+                                    <span className="text-xs text-gray-500">{pokuta.unit}</span>
+                                  </div>
+                                )}
+                                <span className="text-sm font-semibold text-gray-900 min-w-[60px] text-right">
+                                  {finalAmount} Kč
+                                </span>
+                              </div>
                             </div>
-                          </div>
                           
-                          {/* Vlastní částka - zobrazí se jen pokud je pokuta vybraná */}
-                          {pokuta.selected && (
-                            <div className="flex items-center gap-2 mt-2 pl-6">
-                              <label className="text-xs text-gray-600 min-w-[100px]">
-                                Vlastní částka:
-                              </label>
-                              <input
-                                type="number"
-                                min="0"
-                                step="1"
-                                placeholder={`${config.castka} Kč (výchozí)`}
-                                value={pokuta.vlastniCastka || ''}
-                                onChange={(e) => {
-                                  const value = e.target.value;
-                                  if (value === '') {
-                                    // Pokud je pole prázdné, odstraníme vlastní částku
-                                    setPokuty(prev => ({
-                                      ...prev,
-                                      [typ]: {
-                                        ...prev[typ],
-                                        vlastniCastka: undefined
-                                      }
-                                    }));
-                                  } else {
-                                    updateVlastniCastka(typ, parseInt(value) || 0);
-                                  }
-                                }}
-                                className="w-20 p-1 text-xs border border-gray-300 rounded text-black"
-                              />
-                              <span className="text-xs text-gray-500">Kč</span>
-                              {pokuta.vlastniCastka !== undefined && (
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    setPokuty(prev => ({
-                                      ...prev,
-                                      [typ]: {
-                                        ...prev[typ],
-                                        vlastniCastka: undefined
-                                      }
-                                    }));
+                            {/* Vlastní částka - zobrazí se jen pokud je pokuta vybraná */}
+                            {pokuta.selected && (
+                              <div className="flex items-center gap-2 mt-2 pl-6">
+                                <label className="text-xs text-gray-600 min-w-[100px]">
+                                  Vlastní částka:
+                                </label>
+                                <input
+                                  type="number"
+                                  min="0"
+                                  step="1"
+                                  placeholder={`${pokuta.castka} Kč (výchozí)`}
+                                  value={pokuta.vlastniCastka || ''}
+                                  onChange={(e) => {
+                                    const value = e.target.value;
+                                    if (value === '') {
+                                      // Pokud je pole prázdné, odstraníme vlastní částku
+                                      setPokuty(prev => ({
+                                        ...prev,
+                                        [pokuta.id]: {
+                                          ...prev[pokuta.id],
+                                          vlastniCastka: undefined
+                                        }
+                                      }));
+                                    } else {
+                                      updateVlastniCastka(pokuta.id, parseInt(value) || 0);
+                                    }
                                   }}
-                                  className="text-xs text-red-500 hover:text-red-700"
-                                  title="Vrátit na výchozí částku"
-                                >
-                                  ↺ Reset
-                                </button>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
+                                  className="w-20 p-1 text-xs border border-gray-300 rounded text-black"
+                                />
+                                <span className="text-xs text-gray-500">Kč</span>
+                                {pokuta.vlastniCastka !== undefined && (
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setPokuty(prev => ({
+                                        ...prev,
+                                        [pokuta.id]: {
+                                          ...prev[pokuta.id],
+                                          vlastniCastka: undefined
+                                        }
+                                      }));
+                                    }}
+                                    className="text-xs text-red-500 hover:text-red-700"
+                                    title="Vrátit na výchozí částku"
+                                  >
+                                    ↺ Reset
+                                  </button>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
 
                 {/* Celková částka */}

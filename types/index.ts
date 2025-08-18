@@ -21,6 +21,16 @@ export interface Platba {
   datum: string;
 }
 
+export interface PokutaTyp {
+  id: number;
+  nazev: string;
+  cena: number;
+  popis?: string;
+  aktivni: boolean;
+  has_quantity?: boolean;
+  unit?: string;
+}
+
 export interface HracSPokutami extends Hrac {
   pokuty: Pokuta[];
   platby: Platba[];
