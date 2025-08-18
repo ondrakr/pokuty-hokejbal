@@ -20,7 +20,7 @@ export default function LoginForm({ onLogin }: Props) {
     // Simulace API volání (můžeš později nahradit skutečným API)
     await new Promise(resolve => setTimeout(resolve, 500));
 
-    if (username === 'ondrakr83' && password === '5583') {
+    if (username === 'pokuty' && password === 'luxikmamalyho') {
       // Uložení do localStorage
       localStorage.setItem('admin_logged_in', 'true');
       localStorage.setItem('admin_login_time', Date.now().toString());
@@ -38,18 +38,18 @@ export default function LoginForm({ onLogin }: Props) {
         <div className="bg-white rounded-lg shadow-lg p-8">
           {/* Header */}
           <div className="text-center mb-8">
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">
+            <h1 className="text-2xl font-bold text-black mb-2">
               🔐 Přihlášení do administrace
             </h1>
-            <p className="text-gray-600">
-              Hokejbalový tým JUNIOŘI - Evidence pokut
+            <p className="text-black">
+              Pokuty Junioři
             </p>
           </div>
 
           {/* Login Form */}
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="username" className="block text-sm font-medium text-black mb-2">
                 Uživatelské jméno
               </label>
               <input
@@ -65,7 +65,7 @@ export default function LoginForm({ onLogin }: Props) {
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="password" className="block text-sm font-medium text-black mb-2">
                 Heslo
               </label>
               <input
@@ -104,7 +104,7 @@ export default function LoginForm({ onLogin }: Props) {
 
           {/* Footer */}
           <div className="mt-8 text-center text-sm text-gray-500">
-            <p>Systém evidence příspěvků • Hokejbalový tým JUNIOŘI</p>
+            <p>Pokuty Junioři</p>
           </div>
         </div>
       </div>

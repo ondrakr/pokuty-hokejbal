@@ -69,7 +69,7 @@ export default function EvidencePage({ initialHraci, initialPokuty }: Props) {
     <>
       {/* Mobile Header - shown only on mobile */}
       <div className="lg:hidden">
-        <MobileHeader title="Pokuty JUNIOŘI" />
+        <MobileHeader title="Pokuty Junioři" />
       </div>
 
       {/* Mobile Layout */}

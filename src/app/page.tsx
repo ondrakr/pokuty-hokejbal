@@ -56,7 +56,7 @@ export default function Home() {
         <div className="hidden lg:block px-3 py-4">
           <div className="text-center mb-4">
             <h1 className="text-2xl font-bold text-gray-900 mb-1">
-              🏒 Evidence pokut hokejbalového týmu - JUNIOŘI
+              🏒 Pokuty Junioři
             </h1>
             <p className="text-sm text-gray-600">
               Příspěvky na rozlučku na konci sezóny
@@ -69,7 +69,7 @@ export default function Home() {
 
         {/* Footer - hidden on mobile */}
         <div className="hidden lg:block mt-6 text-center text-gray-500 px-3">
-          <p className="text-xs">Systém evidence příspěvků • Hokejbalový tým JUNIOŘI • Rozlučka sezóny</p>
+          <p className="text-xs">Pokuty Junioři</p>
         </div>
       </div>
     </main>
