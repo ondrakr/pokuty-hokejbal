@@ -138,7 +138,7 @@ export default function MobilePlayerCard({ hrac, onOpenPayment, readOnly = false
         {readOnly && hrac.zbyva > 0 && (
           <div className="mt-4">
             <div className="w-full bg-gray-100 text-gray-600 font-medium py-3 px-4 rounded-xl text-center">
-              💰 Dluh: {hrac.zbyva} Kč
+              💰 {hrac.zbyva} Kč
             </div>
           </div>
         )}

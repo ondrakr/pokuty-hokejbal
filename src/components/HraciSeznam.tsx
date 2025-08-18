@@ -169,7 +169,7 @@ export default function HraciSeznam({ hraci, onDataChange, readOnly = false }: P
                     )}
                     {hrac.zbyva > 0 && readOnly && (
                       <div className="bg-gray-100 text-gray-600 font-medium py-1 px-3 rounded text-xs">
-                        Dluh: {hrac.zbyva} Kč
+                        {hrac.zbyva} Kč
                       </div>
                     )}
                     <div className="ml-2">
