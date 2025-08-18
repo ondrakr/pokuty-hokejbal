@@ -10,14 +10,14 @@ import MobilePlayerCard from './MobilePlayerCard';
 import PlatebniModal from './PlatebniModal';
 
 interface Props {
-  initialHraci: Hrac[];
+  initialHraci: HracSPokutami[];
   initialPokuty: Pokuta[];
 }
 
 export default function EvidencePage({ initialHraci, initialPokuty }: Props) {
-  const [hraci] = useState<Hrac[]>(initialHraci);
+  const [hraci] = useState<Hrac[]>(initialHraci.map(h => ({ id: h.id, jmeno: h.jmeno, role: h.role, email: h.email })));
   const [pokuty] = useState<Pokuta[]>(initialPokuty);
-  const [hraciSPokutami, setHraciSPokutami] = useState<HracSPokutami[]>([]);
+  const [hraciSPokutami, setHraciSPokutami] = useState<HracSPokutami[]>(initialHraci);
   const [showPriceList, setShowPriceList] = useState(false);
   const [platebniModal, setPlatebniModal] = useState<{
     isOpen: boolean;
@@ -29,62 +29,10 @@ export default function EvidencePage({ initialHraci, initialPokuty }: Props) {
     zbyva: 0
   });
 
-  // Funkce pro výpočet hráčů s pokutami a platbami
-  const vypocitejHraceSPokutami = async () => {
-    try {
-      // Načteme platby ze serveru
-      const platbyResponse = await fetch('/data/platby.json');
-      const platby = platbyResponse.ok ? await platbyResponse.json() : [];
-
-      return hraci.map(hrac => {
-        const hracovePokuty = pokuty.filter(pokuta => pokuta.hracId === hrac.id);
-        const hracovePlatby = platby.filter((platba: unknown) => (platba as {hracId: number}).hracId === hrac.id);
-        
-        const celkovaCastka = hracovePokuty.reduce((sum, pokuta) => sum + pokuta.castka, 0);
-        const zaplaceno = hracovePlatby.reduce((sum: number, platba: unknown) => sum + (platba as {castka: number}).castka, 0);
-        const zbyva = celkovaCastka - zaplaceno;
-        
-        let status: 'vse_zaplaceno' | 'nic_nezaplaceno' | 'neco_chybi';
-        if (zbyva <= 0) {
-          status = 'vse_zaplaceno';
-        } else if (zaplaceno === 0) {
-          status = 'nic_nezaplaceno';
-        } else {
-          status = 'neco_chybi';
-        }
-        
-        return {
-          ...hrac,
-          pokuty: hracovePokuty,
-          platby: hracovePlatby,
-          celkovaCastka,
-          zaplaceno,
-          zbyva: Math.max(0, zbyva),
-          status
-        };
-      });
-    } catch (error) {
-      console.error('Chyba při načítání plateb:', error);
-      return hraci.map(hrac => ({
-        ...hrac,
-        pokuty: [],
-        platby: [],
-        celkovaCastka: 0,
-        zaplaceno: 0,
-        zbyva: 0,
-        status: 'nic_nezaplaceno' as const
-      }));
-    }
-  };
-
-  // Aktualizace hráčů s pokutami při změně pokut
+  // Data už máme připravená z API, nemusíme nic přepočítávat
   useEffect(() => {
-    const loadData = async () => {
-      const data = await vypocitejHraceSPokutami();
-      setHraciSPokutami(data);
-    };
-    loadData();
-  }, [pokuty, hraci, vypocitejHraceSPokutami]);
+    setHraciSPokutami(initialHraci);
+  }, [initialHraci]);
 
   // Funkce pro obnovení dat po přidání pokuty
   const handlePokutaPridana = () => {

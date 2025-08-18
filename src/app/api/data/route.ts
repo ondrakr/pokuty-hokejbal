@@ -18,6 +18,8 @@ export async function GET() {
       );
     }
 
+    console.log('Načtení hráčů:', hraci?.length || 0);
+
     // Načtení pokut
     const { data: pokuty, error: pokutyError } = await supabase
       .from('pokuty')
