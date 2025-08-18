@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { HracSPokutami, Pokuta } from '../../types';
 import EvidencePage from '@/components/EvidencePage';
+import Image from 'next/image';
 
 export default function Home() {
   const [data, setData] = useState<{ hraci: HracSPokutami[], pokuty: Pokuta[] }>({
@@ -84,9 +85,20 @@ export default function Home() {
         {/* Desktop Header - hidden on mobile */}
         <div className="hidden lg:block px-3 py-4">
           <div className="text-center mb-4 relative">
-            <h1 className="text-2xl font-bold text-gray-900 mb-1">
+            <h1 className="text-2xl font-bold text-gray-900 mb-3">
               🏒 Pokuty Junioři
             </h1>
+            
+            {/* QR kód */}
+            <div className="flex justify-center mb-4">
+              <Image
+                src="/qr-kod.jpg"
+                alt="QR kód pro platby"
+                width={200}
+                height={200}
+                className="rounded-lg shadow-md"
+              />
+            </div>
            
             
             {/* Tlačítko přihlášení/administrace */}
