@@ -134,14 +134,7 @@ export default function MobilePlayerCard({ hrac, onOpenPayment, readOnly = false
           </div>
         )}
         
-        {/* Informace pro read-only režim */}
-        {readOnly && hrac.zbyva > 0 && (
-          <div className="mt-4">
-            <div className="w-full bg-gray-100 text-gray-600 font-medium py-3 px-4 rounded-xl text-center">
-              💰 {hrac.zbyva} Kč
-            </div>
-          </div>
-        )}
+
 
         {/* Expand indikátor */}
         <div className="mt-3 flex justify-center">
