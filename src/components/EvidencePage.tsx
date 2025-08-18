@@ -87,19 +87,19 @@ export default function EvidencePage({ initialHraci, initialPokuty, isLoggedIn =
               <div>
                 <div className="text-xs text-gray-500 mb-1">Celkem</div>
                 <div className="font-bold text-gray-900">
-                  {hraciSPokutami.reduce((sum, hrac) => sum + hrac.celkovaCastka, 0)} Kč
+                  {sortedHraci.reduce((sum, hrac) => sum + hrac.celkovaCastka, 0)} Kč
                 </div>
               </div>
               <div>
                 <div className="text-xs text-gray-500 mb-1">Zaplaceno</div>
                 <div className="font-bold text-green-600">
-                  {hraciSPokutami.reduce((sum, hrac) => sum + hrac.zaplaceno, 0)} Kč
+                  {sortedHraci.reduce((sum, hrac) => sum + hrac.zaplaceno, 0)} Kč
                 </div>
               </div>
               <div>
                 <div className="text-xs text-gray-500 mb-1">Zbývá</div>
                 <div className="font-bold text-red-600">
-                  {hraciSPokutami.reduce((sum, hrac) => sum + hrac.zbyva, 0)} Kč
+                  {sortedHraci.reduce((sum, hrac) => sum + hrac.zbyva, 0)} Kč
                 </div>
               </div>
             </div>
@@ -133,11 +133,6 @@ export default function EvidencePage({ initialHraci, initialPokuty, isLoggedIn =
               <h2 className="font-bold text-gray-800 text-lg">
                 👥 {isLoggedIn ? `Seznam hráčů (${sortedHraci.length})` : `Hráči s pokutami (${sortedHraci.length})`}
               </h2>
-              {!isLoggedIn && (
-                <div className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
-                  📖 Pouze prohlížení
-                </div>
-              )}
             </div>
             {sortedHraci.map((hrac) => (
               <MobilePlayerCard
@@ -189,7 +184,7 @@ export default function EvidencePage({ initialHraci, initialPokuty, isLoggedIn =
             
             {/* Pravý sloupec - Seznam hráčů */}
             <div className="lg:col-span-2">
-              <HraciSeznam hraci={hraciSPokutami} onDataChange={handleDataChange} readOnly={!isLoggedIn} />
+              <HraciSeznam hraci={sortedHraci} onDataChange={handleDataChange} readOnly={!isLoggedIn} />
             </div>
           </div>
         </div>
