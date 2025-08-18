@@ -52,6 +52,24 @@ export default function HraciSeznam({ hraci, onDataChange, readOnly = false }: P
     });
   };
 
+  const handleDeletePokuta = async (pokutaId: number) => {
+    if (!confirm('Opravdu chcete smazat tuto pokutu?')) return;
+    
+    try {
+      const response = await fetch(`/api/pokuty/${pokutaId}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        onDataChange();
+      } else {
+        alert('Chyba při mazání pokuty');
+      }
+    } catch (error) {
+      alert('Chyba při mazání pokuty');
+    }
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'vse_zaplaceno':
@@ -189,6 +207,18 @@ export default function HraciSeznam({ hraci, onDataChange, readOnly = false }: P
                               <span className="text-sm font-semibold text-gray-900">
                                 {pokuta.castka} Kč
                               </span>
+                              {!readOnly && (
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDeletePokuta(pokuta.id);
+                                  }}
+                                  className="text-red-600 hover:text-red-800 p-1 rounded"
+                                  title="Smazat pokutu"
+                                >
+                                  🗑️
+                                </button>
+                              )}
                             </div>
                           </div>
                         ))}

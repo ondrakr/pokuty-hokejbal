@@ -12,6 +12,25 @@ interface Props {
 export default function MobilePlayerCard({ hrac, onOpenPayment, readOnly = false }: Props) {
   const [isExpanded, setIsExpanded] = useState(false);
 
+  const handleDeletePokuta = async (pokutaId: number) => {
+    if (!confirm('Opravdu chcete smazat tuto pokutu?')) return;
+    
+    try {
+      const response = await fetch(`/api/pokuty/${pokutaId}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        // Refresh stránky pro obnovení dat
+        window.location.reload();
+      } else {
+        alert('Chyba při mazání pokuty');
+      }
+    } catch (error) {
+      alert('Chyba při mazání pokuty');
+    }
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'vse_zaplaceno':
@@ -160,8 +179,20 @@ export default function MobilePlayerCard({ hrac, onOpenPayment, readOnly = false
                       <h5 className="font-medium text-gray-900 text-sm">{pokuta.typ}</h5>
                       <p className="text-xs text-gray-500">{formatDatum(pokuta.datum)}</p>
                     </div>
-                    <div className="text-right">
+                    <div className="flex items-center gap-2">
                       <span className="font-bold text-gray-900">{pokuta.castka} Kč</span>
+                      {!readOnly && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeletePokuta(pokuta.id);
+                          }}
+                          className="text-red-600 hover:text-red-800 p-1 rounded"
+                          title="Smazat pokutu"
+                        >
+                          🗑️
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>

@@ -1,24 +1,35 @@
 'use client';
 
-const pokutyCenik = [
-  { nazev: 'První start', castka: '100 Kč' },
-  { nazev: 'První gól', castka: '100 Kč' },
-  { nazev: 'První asistence', castka: '50 Kč' },
-  { nazev: 'Hattrick', castka: '200 Kč' },
-  { nazev: 'Desátý gól', castka: '50 Kč' },
-  { nazev: 'Vyšší trest - faul', castka: '100 Kč' },
-  { nazev: 'Vyšší trest - nesportovní chování', castka: '200 Kč' },
-  { nazev: 'Neomluvený pozdní příchod na zápas', castka: '5 Kč/min' },
-  { nazev: 'Poprvé kapitán', castka: '200 Kč' },
-  { nazev: 'Poprvé asistent', castka: '100 Kč' },
-  { nazev: 'Vítězný gól', castka: '20 Kč' },
-  { nazev: 'Nesplněný trest (flašky, míčky, ...)', castka: '100 Kč' },
-  { nazev: 'Trest pro trenéra', castka: '500 Kč' },
-  { nazev: 'Obdržený gól', castka: '2 Kč' },
-  { nazev: 'Vychytaná nula', castka: '100 Kč' }
-];
+import { useState, useEffect } from 'react';
+
+interface PokutaTyp {
+  id: number;
+  nazev: string;
+  cena: number;
+  popis?: string;
+}
 
 export default function CenikPokut() {
+  const [pokutyCenik, setPokutyCenik] = useState<PokutaTyp[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadCenik = async () => {
+      try {
+        const response = await fetch('/api/pokuty-typy');
+        if (response.ok) {
+          const data = await response.json();
+          setPokutyCenik(data);
+        }
+      } catch (error) {
+        console.error('Chyba při načítání ceníku:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadCenik();
+  }, []);
   return (
     <div className="bg-white rounded-lg shadow-lg overflow-hidden">
       {/* Header s logem a názvem */}
@@ -36,14 +47,22 @@ export default function CenikPokut() {
 
       {/* Seznam pokut */}
       <div className="p-3">
-        <div className="space-y-1">
-          {pokutyCenik.map((pokuta, index) => (
-            <div key={index} className="flex justify-between items-center py-1.5 border-b border-gray-100 last:border-b-0">
-              <span className="text-gray-800 text-sm font-medium">{pokuta.nazev}</span>
-              <span className="text-sm font-bold text-blue-600">{pokuta.castka}</span>
-            </div>
-          ))}
-        </div>
+        {loading ? (
+          <div className="flex justify-center py-4">
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+          </div>
+        ) : (
+          <div className="space-y-1">
+            {pokutyCenik.map((pokuta) => (
+              <div key={pokuta.id} className="flex justify-between items-center py-1.5 border-b border-gray-100 last:border-b-0">
+                <span className="text-gray-800 text-sm font-medium">{pokuta.nazev}</span>
+                <span className="text-sm font-bold text-blue-600">
+                  {pokuta.nazev.includes('příchod') ? `${pokuta.cena} Kč/min` : `${pokuta.cena} Kč`}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
 
         {/* QR kód sekce */}
         <div className="mt-4 pt-3 border-t border-gray-200">

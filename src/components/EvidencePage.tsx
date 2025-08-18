@@ -63,8 +63,12 @@ export default function EvidencePage({ initialHraci, initialPokuty, isLoggedIn =
     });
   };
 
-  // Seřadíme hráče podle zbývající částky (nejvyšší dluh první)
-  const sortedHraci = [...hraciSPokutami].sort((a, b) => b.zbyva - a.zbyva);
+  // Filtrujeme a seřadíme hráče
+  const filteredHraci = isLoggedIn 
+    ? hraciSPokutami 
+    : hraciSPokutami.filter(hrac => hrac.pokuty.length > 0); // Nepřihlášeným pouze hráče s pokutami
+  
+  const sortedHraci = [...filteredHraci].sort((a, b) => b.zbyva - a.zbyva);
 
   return (
     <>
