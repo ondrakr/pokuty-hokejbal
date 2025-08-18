@@ -82,6 +82,8 @@ export async function PATCH(request: NextRequest) {
     const body = await request.json();
     const { id, zaplaceno } = body;
 
+    console.log('🔄 PATCH /api/pokuty - aktualizuji pokuta ID:', id, 'zaplaceno:', zaplaceno);
+
     // Aktualizace pokuty v Supabase
     const { data: aktualizovanaPokuta, error } = await supabase
       .from('pokuty')

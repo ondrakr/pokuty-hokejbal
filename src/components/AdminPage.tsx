@@ -53,7 +53,7 @@ export default function AdminPage({ initialHraci, initialPokuty }: Props) {
           {/* Mobile Content */}
           <div className="space-y-4">
             {activeTab === 'hraci' && <SpravHracu hraci={initialHraci} onDataChange={() => window.location.reload()} />}
-            {activeTab === 'pokuty' && <SpravPokut pokuty={initialPokuty} hraci={initialHraci} onDataChange={() => window.location.reload()} />}
+            {activeTab === 'pokuty' && <SpravPokut onDataChange={() => window.location.reload()} />}
           </div>
 
           {/* Mobile Back Button */}
@@ -107,7 +107,7 @@ export default function AdminPage({ initialHraci, initialPokuty }: Props) {
             {/* Desktop Content */}
             <div className="p-6">
               {activeTab === 'hraci' && <SpravHracu hraci={initialHraci} onDataChange={() => window.location.reload()} />}
-              {activeTab === 'pokuty' && <SpravPokut pokuty={initialPokuty} hraci={initialHraci} onDataChange={() => window.location.reload()} />}
+              {activeTab === 'pokuty' && <SpravPokut onDataChange={() => window.location.reload()} />}
             </div>
 
             {/* Desktop Back Button */}
