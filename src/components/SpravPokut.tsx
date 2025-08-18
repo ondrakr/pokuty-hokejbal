@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface PokutaTyp {
   id: number;
@@ -14,48 +14,108 @@ interface Props {
 }
 
 export default function SpravPokut({ onDataChange }: Props) {
-  const [pokutaTypy, setPokutaTypy] = useState<PokutaTyp[]>([
-    { id: 1, nazev: 'První gól', cena: 100, popis: 'První gól v zápase' },
-    { id: 2, nazev: 'Vítězný gól', cena: 20, popis: 'Rozhodující gól' },
-    { id: 3, nazev: 'První start', cena: 100, popis: 'První start v sezóně' },
-    { id: 4, nazev: 'Vychytaná nula', cena: 100, popis: 'Čisté konto brankáře' },
-    { id: 5, nazev: 'Hattrick', cena: 200, popis: 'Tři góly v jednom zápase' },
-    { id: 6, nazev: 'Poprvé kapitán', cena: 200, popis: 'První kapitánská páska' },
-    { id: 7, nazev: 'První asistence', cena: 50, popis: 'První asistence v sezóně' },
-    { id: 8, nazev: 'Obdržený gól', cena: 2, popis: 'Gól proti brankáři' },
-    { id: 9, nazev: 'Žlutá karta', cena: 50, popis: 'Napomenutí rozhodčího' },
-    { id: 10, nazev: 'Červená karta', cena: 200, popis: 'Vyloučení ze hry' },
-  ]);
+  const [pokutaTypy, setPokutaTypy] = useState<PokutaTyp[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const [editingId, setEditingId] = useState<number | null>(null);
   const [newPokuta, setNewPokuta] = useState({ nazev: '', cena: 0, popis: '' });
   const [showAddForm, setShowAddForm] = useState(false);
 
+  // Načtení typů pokut z API
+  const loadPokutyTypy = async () => {
+    try {
+      const response = await fetch('/api/pokuty-typy');
+      if (response.ok) {
+        const data = await response.json();
+        setPokutaTypy(data);
+      } else {
+        console.error('Chyba při načítání typů pokut');
+      }
+    } catch (error) {
+      console.error('Chyba při načítání typů pokut:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadPokutyTypy();
+  }, []);
+
   const handleEdit = (pokuta: PokutaTyp) => {
     setEditingId(pokuta.id);
   };
 
-  const handleSave = (id: number, nazev: string, cena: number, popis: string) => {
-    setPokutaTypy(prev => prev.map(p => 
-      p.id === id ? { ...p, nazev, cena, popis } : p
-    ));
-    setEditingId(null);
+  const handleSave = async (id: number, nazev: string, cena: number, popis: string) => {
+    try {
+      const response = await fetch('/api/pokuty-typy', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ id, nazev, cena, popis }),
+      });
+
+      if (response.ok) {
+        await loadPokutyTypy();
+        setEditingId(null);
+      } else {
+        alert('Chyba při aktualizaci typu pokuty');
+      }
+    } catch (error) {
+      alert('Chyba při aktualizaci typu pokuty');
+    }
   };
 
-  const handleDelete = (id: number) => {
+  const handleDelete = async (id: number) => {
     if (confirm('Opravdu chcete smazat tento typ pokuty?')) {
-      setPokutaTypy(prev => prev.filter(p => p.id !== id));
+      try {
+        const response = await fetch(`/api/pokuty-typy/${id}`, {
+          method: 'DELETE',
+        });
+
+        if (response.ok) {
+          await loadPokutyTypy();
+        } else {
+          alert('Chyba při mazání typu pokuty');
+        }
+      } catch (error) {
+        alert('Chyba při mazání typu pokuty');
+      }
     }
   };
 
-  const handleAdd = () => {
+  const handleAdd = async () => {
     if (newPokuta.nazev && newPokuta.cena > 0) {
-      const id = Math.max(...pokutaTypy.map(p => p.id), 0) + 1;
-      setPokutaTypy(prev => [...prev, { id, ...newPokuta }]);
-      setNewPokuta({ nazev: '', cena: 0, popis: '' });
-      setShowAddForm(false);
+      try {
+        const response = await fetch('/api/pokuty-typy', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(newPokuta),
+        });
+
+        if (response.ok) {
+          await loadPokutyTypy();
+          setNewPokuta({ nazev: '', cena: 0, popis: '' });
+          setShowAddForm(false);
+        } else {
+          alert('Chyba při přidávání typu pokuty');
+        }
+      } catch (error) {
+        alert('Chyba při přidávání typu pokuty');
+      }
     }
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
