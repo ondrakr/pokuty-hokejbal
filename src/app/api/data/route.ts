@@ -4,6 +4,10 @@ import { HracSPokutami } from '../../../../types';
 
 export async function GET() {
   try {
+    console.log('🔍 API /data - začátek');
+    console.log('🔑 Supabase URL:', process.env.NEXT_PUBLIC_SUPABASE_URL);
+    console.log('🔑 Supabase Key existuje:', !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
+    
     // Načtení hráčů s jejich pokutami a platbami
     const { data: hraci, error: hraciError } = await supabase
       .from('hraci')
@@ -11,14 +15,14 @@ export async function GET() {
       .order('id');
 
     if (hraciError) {
-      console.error('Chyba při načítání hráčů:', hraciError);
+      console.error('❌ Chyba při načítání hráčů:', hraciError);
       return NextResponse.json(
-        { error: 'Chyba při načítání hráčů' },
+        { error: 'Chyba při načítání hráčů', details: hraciError },
         { status: 500 }
       );
     }
 
-    console.log('Načtení hráčů:', hraci?.length || 0);
+    console.log('✅ Načtení hráčů:', hraci?.length || 0, hraci);
 
     // Načtení pokut
     const { data: pokuty, error: pokutyError } = await supabase
