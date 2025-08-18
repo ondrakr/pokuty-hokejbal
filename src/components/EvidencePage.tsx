@@ -8,6 +8,7 @@ import PridatPokutu from './PridatPokutu';
 import MobileHeader from './MobileHeader';
 import MobilePlayerCard from './MobilePlayerCard';
 import PlatebniModal from './PlatebniModal';
+import QRKodSekce from './QRKodSekce';
 
 interface Props {
   initialHraci: HracSPokutami[];
@@ -29,6 +30,7 @@ export default function EvidencePage({ initialHraci, initialPokuty, isLoggedIn =
     hrac: null,
     zbyva: 0
   });
+  const [showQRModal, setShowQRModal] = useState(false);
 
   // Data už máme připravená z API, nemusíme nic přepočítávat
   useEffect(() => {
@@ -107,22 +109,36 @@ export default function EvidencePage({ initialHraci, initialPokuty, isLoggedIn =
 
           {/* Mobile Action Buttons */}
           {isLoggedIn ? (
-            <div className="grid grid-cols-2 gap-3 mb-4">
-              <PridatPokutu hraci={hraci} onPokutaPridana={handlePokutaPridana} />
+            <div className="space-y-3 mb-4">
+              <div className="grid grid-cols-2 gap-3">
+                <PridatPokutu hraci={hraci} onPokutaPridana={handlePokutaPridana} />
+                <button
+                  onClick={() => setShowPriceList(true)}
+                  className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-6 rounded-lg text-lg flex items-center gap-3 shadow-lg justify-center"
+                >
+                  📋 Ceník
+                </button>
+              </div>
               <button
-                onClick={() => setShowPriceList(true)}
-                className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-6 rounded-lg text-lg flex items-center gap-3 shadow-lg justify-center"
+                onClick={() => setShowQRModal(true)}
+                className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg text-base flex items-center gap-2 shadow-lg justify-center"
               >
-                📋 Ceník
+                📱 Zobrazit QR kód
               </button>
             </div>
           ) : (
-            <div className="mb-4">
+            <div className="space-y-3 mb-4">
               <button
                 onClick={() => setShowPriceList(true)}
                 className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-6 rounded-lg text-lg flex items-center gap-3 shadow-lg justify-center"
               >
                 📋 Ceník pokut
+              </button>
+              <button
+                onClick={() => setShowQRModal(true)}
+                className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg text-base flex items-center gap-2 shadow-lg justify-center"
+              >
+                📱 Zobrazit QR kód
               </button>
             </div>
           )}
@@ -164,6 +180,26 @@ export default function EvidencePage({ initialHraci, initialPokuty, isLoggedIn =
             </div>
           </div>
         )}
+
+        {/* Mobile QR Code Modal */}
+        {showQRModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-xl max-w-sm w-full">
+              <div className="p-4 border-b flex justify-between items-center">
+                <h3 className="text-lg font-bold">📱 QR kód pro platby</h3>
+                <button
+                  onClick={() => setShowQRModal(false)}
+                  className="text-gray-400 hover:text-gray-600 text-xl"
+                >
+                  ✕
+                </button>
+              </div>
+              <div className="p-4">
+                <QRKodSekce />
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Desktop Layout - hidden on mobile */}
@@ -177,9 +213,10 @@ export default function EvidencePage({ initialHraci, initialPokuty, isLoggedIn =
           )}
           
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            {/* Levý sloupec - Ceník pokut */}
+            {/* Levý sloupec - Ceník pokut a QR kód */}
             <div className="lg:col-span-1">
               <CenikPokut />
+              <QRKodSekce />
             </div>
             
             {/* Pravý sloupec - Seznam hráčů */}
