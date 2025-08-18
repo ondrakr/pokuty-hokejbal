@@ -7,9 +7,10 @@ import PlatebniModal from './PlatebniModal';
 interface Props {
   hraci: HracSPokutami[];
   onDataChange: () => void;
+  readOnly?: boolean;
 }
 
-export default function HraciSeznam({ hraci, onDataChange }: Props) {
+export default function HraciSeznam({ hraci, onDataChange, readOnly = false }: Props) {
   const [rozbaleniHraci, setRozbaleniHraci] = useState<Set<number>>(new Set());
   const [platebniModal, setPlatebniModal] = useState<{
     isOpen: boolean;
@@ -137,7 +138,7 @@ export default function HraciSeznam({ hraci, onDataChange }: Props) {
                         {hrac.zbyva} Kč
                       </p>
                     </div>
-                    {hrac.zbyva > 0 && (
+                    {hrac.zbyva > 0 && !readOnly && (
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
@@ -147,6 +148,11 @@ export default function HraciSeznam({ hraci, onDataChange }: Props) {
                       >
                         Zaplaceno
                       </button>
+                    )}
+                    {hrac.zbyva > 0 && readOnly && (
+                      <div className="bg-gray-100 text-gray-600 font-medium py-1 px-3 rounded text-xs">
+                        Dluh: {hrac.zbyva} Kč
+                      </div>
                     )}
                     <div className="ml-2">
                       <div className={`transform transition-transform text-xs ${jerozbalen ? 'rotate-180' : ''}`}>

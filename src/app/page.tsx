@@ -10,6 +10,32 @@ export default function Home() {
     pokuty: []
   });
   const [loading, setLoading] = useState(true);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  // Kontrola přihlášení
+  useEffect(() => {
+    const checkLogin = () => {
+      const loggedIn = localStorage.getItem('admin_logged_in') === 'true';
+      const loginTime = localStorage.getItem('admin_login_time');
+      
+      if (loggedIn && loginTime) {
+        const now = Date.now();
+        const loginTimestamp = parseInt(loginTime);
+        const hoursPassed = (now - loginTimestamp) / (1000 * 60 * 60);
+        
+        if (hoursPassed <= 24) {
+          setIsLoggedIn(true);
+        } else {
+          // Přihlášení vypršelo
+          localStorage.removeItem('admin_logged_in');
+          localStorage.removeItem('admin_login_time');
+          setIsLoggedIn(false);
+        }
+      }
+    };
+
+    checkLogin();
+  }, []);
 
   useEffect(() => {
     const loadData = async () => {
@@ -54,18 +80,37 @@ export default function Home() {
       <div className="lg:container lg:mx-auto">
         {/* Desktop Header - hidden on mobile */}
         <div className="hidden lg:block px-3 py-4">
-          <div className="text-center mb-4">
+          <div className="text-center mb-4 relative">
             <h1 className="text-2xl font-bold text-gray-900 mb-1">
               🏒 Pokuty Junioři
             </h1>
             <p className="text-sm text-gray-600">
               Příspěvky na rozlučku na konci sezóny
             </p>
+            
+            {/* Tlačítko přihlášení/administrace */}
+            <div className="absolute top-0 right-0">
+              {isLoggedIn ? (
+                <a
+                  href="/admin"
+                  className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2 px-4 rounded-lg transition-colors"
+                >
+                  ⚙️ Administrace
+                </a>
+              ) : (
+                <a
+                  href="/admin"
+                  className="inline-flex items-center gap-2 bg-gray-600 hover:bg-gray-700 text-white text-sm font-medium py-2 px-4 rounded-lg transition-colors"
+                >
+                  🔐 Přihlášení
+                </a>
+              )}
+            </div>
           </div>
         </div>
 
         {/* Komponenta s interaktivitou */}
-        <EvidencePage initialHraci={data.hraci} initialPokuty={data.pokuty} />
+        <EvidencePage initialHraci={data.hraci} initialPokuty={data.pokuty} isLoggedIn={isLoggedIn} />
 
         {/* Footer - hidden on mobile */}
         <div className="hidden lg:block mt-6 text-center text-gray-500 px-3">

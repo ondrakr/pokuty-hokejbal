@@ -5,10 +5,11 @@ import { HracSPokutami, Hrac } from '../../types';
 
 interface Props {
   hrac: HracSPokutami;
-  onOpenPayment: (hrac: Hrac, amount: number) => void;
+  onOpenPayment?: (hrac: Hrac, amount: number) => void;
+  readOnly?: boolean;
 }
 
-export default function MobilePlayerCard({ hrac, onOpenPayment }: Props) {
+export default function MobilePlayerCard({ hrac, onOpenPayment, readOnly = false }: Props) {
   const [isExpanded, setIsExpanded] = useState(false);
 
   const getStatusColor = (status: string) => {
@@ -100,7 +101,7 @@ export default function MobilePlayerCard({ hrac, onOpenPayment }: Props) {
         </div>
 
         {/* Tlačítko pro platbu */}
-        {hrac.zbyva > 0 && (
+        {hrac.zbyva > 0 && !readOnly && onOpenPayment && (
           <div className="mt-4">
             <button
               onClick={(e) => {
@@ -111,6 +112,15 @@ export default function MobilePlayerCard({ hrac, onOpenPayment }: Props) {
             >
               💰 Zaznamenat platbu
             </button>
+          </div>
+        )}
+        
+        {/* Informace pro read-only režim */}
+        {readOnly && hrac.zbyva > 0 && (
+          <div className="mt-4">
+            <div className="w-full bg-gray-100 text-gray-600 font-medium py-3 px-4 rounded-xl text-center">
+              💰 Dluh: {hrac.zbyva} Kč
+            </div>
           </div>
         )}
 

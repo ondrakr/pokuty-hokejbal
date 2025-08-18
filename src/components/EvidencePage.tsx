@@ -12,9 +12,10 @@ import PlatebniModal from './PlatebniModal';
 interface Props {
   initialHraci: HracSPokutami[];
   initialPokuty: Pokuta[];
+  isLoggedIn?: boolean;
 }
 
-export default function EvidencePage({ initialHraci, initialPokuty }: Props) {
+export default function EvidencePage({ initialHraci, initialPokuty, isLoggedIn = false }: Props) {
   const [hraci] = useState<Hrac[]>(initialHraci.map(h => ({ id: h.id, jmeno: h.jmeno, role: h.role, email: h.email })));
   const [pokuty] = useState<Pokuta[]>(initialPokuty);
   const [hraciSPokutami, setHraciSPokutami] = useState<HracSPokutami[]>(initialHraci);
@@ -69,7 +70,7 @@ export default function EvidencePage({ initialHraci, initialPokuty }: Props) {
     <>
       {/* Mobile Header - shown only on mobile */}
       <div className="lg:hidden">
-        <MobileHeader title="Pokuty Junioři" />
+        <MobileHeader title={isLoggedIn ? "Pokuty Junioři - Admin" : "Pokuty Junioři"} />
       </div>
 
       {/* Mobile Layout */}
@@ -101,26 +102,45 @@ export default function EvidencePage({ initialHraci, initialPokuty }: Props) {
           </div>
 
           {/* Mobile Action Buttons */}
-          <div className="grid grid-cols-2 gap-3 mb-4">
-            <PridatPokutu hraci={hraci} onPokutaPridana={handlePokutaPridana} />
-            <button
-              onClick={() => setShowPriceList(true)}
-              className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-6 rounded-lg text-lg flex items-center gap-3 shadow-lg justify-center"
-            >
-              📋 Ceník
-            </button>
-          </div>
+          {isLoggedIn ? (
+            <div className="grid grid-cols-2 gap-3 mb-4">
+              <PridatPokutu hraci={hraci} onPokutaPridana={handlePokutaPridana} />
+              <button
+                onClick={() => setShowPriceList(true)}
+                className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-6 rounded-lg text-lg flex items-center gap-3 shadow-lg justify-center"
+              >
+                📋 Ceník
+              </button>
+            </div>
+          ) : (
+            <div className="mb-4">
+              <button
+                onClick={() => setShowPriceList(true)}
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-6 rounded-lg text-lg flex items-center gap-3 shadow-lg justify-center"
+              >
+                📋 Ceník pokut
+              </button>
+            </div>
+          )}
 
           {/* Mobile Player Cards */}
           <div className="space-y-4">
-            <h2 className="font-bold text-gray-800 text-lg mb-3">
-              👥 Seznam hráčů ({sortedHraci.length})
-            </h2>
+            <div className="flex justify-between items-center mb-3">
+              <h2 className="font-bold text-gray-800 text-lg">
+                👥 Seznam hráčů ({sortedHraci.length})
+              </h2>
+              {!isLoggedIn && (
+                <div className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
+                  📖 Pouze prohlížení
+                </div>
+              )}
+            </div>
             {sortedHraci.map((hrac) => (
               <MobilePlayerCard
                 key={hrac.id}
                 hrac={hrac}
-                onOpenPayment={openPlatebniModal}
+                onOpenPayment={isLoggedIn ? openPlatebniModal : undefined}
+                readOnly={!isLoggedIn}
               />
             ))}
           </div>
@@ -150,9 +170,21 @@ export default function EvidencePage({ initialHraci, initialPokuty }: Props) {
       {/* Desktop Layout - hidden on mobile */}
       <div className="hidden lg:block">
         <div className="px-3">
-          {/* Desktop Tlačítko pro přidání pokut */}
-          <div className="mb-6 text-center">
-            <PridatPokutu hraci={hraci} onPokutaPridana={handlePokutaPridana} />
+          {/* Desktop Header s informací o režimu */}
+          <div className="mb-6 flex justify-between items-center">
+            {isLoggedIn ? (
+              <div className="text-center flex-1">
+                <PridatPokutu hraci={hraci} onPokutaPridana={handlePokutaPridana} />
+              </div>
+            ) : (
+              <div className="flex-1 text-center">
+                <div className="inline-flex items-center gap-2 bg-gray-100 text-gray-600 px-4 py-2 rounded-lg">
+                  <span>📖</span>
+                  <span className="font-medium">Režim pouze pro prohlížení</span>
+                  <span className="text-sm">• Pro úpravy se přihlaste</span>
+                </div>
+              </div>
+            )}
           </div>
           
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
@@ -163,7 +195,7 @@ export default function EvidencePage({ initialHraci, initialPokuty }: Props) {
             
             {/* Pravý sloupec - Seznam hráčů */}
             <div className="lg:col-span-2">
-              <HraciSeznam hraci={hraciSPokutami} onDataChange={handleDataChange} />
+              <HraciSeznam hraci={hraciSPokutami} onDataChange={handleDataChange} readOnly={!isLoggedIn} />
             </div>
           </div>
         </div>
