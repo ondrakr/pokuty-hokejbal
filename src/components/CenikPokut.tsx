@@ -64,20 +64,6 @@ export default function CenikPokut() {
           </div>
         )}
 
-        {/* QR kód sekce */}
-        <div className="mt-4 pt-3 border-t border-gray-200">
-          <div className="text-center">
-            <div className="w-20 h-20 bg-gray-200 mx-auto mb-2 flex items-center justify-center border-2 border-dashed border-gray-400">
-              <span className="text-gray-500 text-xs">QR kód</span>
-            </div>
-            <p className="text-sm font-bold text-gray-800 mb-1">
-              Platba QR kódem nebo hotovostí
-            </p>
-            <p className="text-xs text-gray-600">
-              Platba vždy do konce měsíce, další měsíc úrok 100%
-            </p>
-          </div>
-        </div>
       </div>
     </div>
   );
