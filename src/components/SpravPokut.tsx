@@ -18,6 +18,7 @@ export default function SpravPokut({ onDataChange }: Props) {
   const [loading, setLoading] = useState(true);
 
   const [editingId, setEditingId] = useState<number | null>(null);
+  const [editingData, setEditingData] = useState({ nazev: '', cena: 0, popis: '' });
   const [newPokuta, setNewPokuta] = useState({ nazev: '', cena: 0, popis: '' });
   const [showAddForm, setShowAddForm] = useState(false);
 
@@ -44,21 +45,42 @@ export default function SpravPokut({ onDataChange }: Props) {
 
   const handleEdit = (pokuta: PokutaTyp) => {
     setEditingId(pokuta.id);
+    setEditingData({
+      nazev: pokuta.nazev,
+      cena: pokuta.cena,
+      popis: pokuta.popis || ''
+    });
   };
 
-  const handleSave = async (id: number, nazev: string, cena: number, popis: string) => {
+  const handleCancelEdit = () => {
+    setEditingId(null);
+    setEditingData({ nazev: '', cena: 0, popis: '' });
+  };
+
+  const handleSave = async () => {
+    if (!editingId || !editingData.nazev || editingData.cena <= 0) {
+      alert('Vyplňte všechna povinná pole');
+      return;
+    }
+
     try {
       const response = await fetch('/api/pokuty-typy', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ id, nazev, cena, popis }),
+        body: JSON.stringify({ 
+          id: editingId, 
+          nazev: editingData.nazev, 
+          cena: editingData.cena, 
+          popis: editingData.popis 
+        }),
       });
 
       if (response.ok) {
         await loadPokutyTypy();
         setEditingId(null);
+        setEditingData({ nazev: '', cena: 0, popis: '' });
       } else {
         alert('Chyba při aktualizaci typu pokuty');
       }
@@ -210,19 +232,10 @@ export default function SpravPokut({ onDataChange }: Props) {
                     {editingId === pokuta.id ? (
                       <input
                         type="text"
-                        defaultValue={pokuta.nazev}
+                        value={editingData.nazev}
+                        onChange={(e) => setEditingData(prev => ({ ...prev, nazev: e.target.value }))}
                         className="w-full px-2 py-1 border border-gray-300 rounded text-black"
-                        onBlur={(e) => {
-                          const cenaInput = e.target.parentElement?.parentElement?.querySelector('input[type="number"]') as HTMLInputElement;
-                          const opisInput = e.target.parentElement?.parentElement?.querySelector('input[type="text"]:last-of-type') as HTMLInputElement;
-                          handleSave(pokuta.id, e.target.value, parseInt(cenaInput?.value || '0'), opisInput?.value || '');
-                        }}
-                        onKeyPress={(e) => {
-                          if (e.key === 'Enter') {
-                            e.currentTarget.blur();
-                          }
-                        }}
-                        autoFocus
+                        placeholder="Název pokuty"
                       />
                     ) : (
                       <div className="text-sm font-medium text-gray-900">{pokuta.nazev}</div>
@@ -232,8 +245,10 @@ export default function SpravPokut({ onDataChange }: Props) {
                     {editingId === pokuta.id ? (
                       <input
                         type="number"
-                        defaultValue={pokuta.cena}
+                        value={editingData.cena}
+                        onChange={(e) => setEditingData(prev => ({ ...prev, cena: parseInt(e.target.value) || 0 }))}
                         className="w-20 px-2 py-1 border border-gray-300 rounded text-black"
+                        placeholder="0"
                       />
                     ) : (
                       <div className="text-sm font-bold text-blue-600">{pokuta.cena} Kč</div>
@@ -243,23 +258,33 @@ export default function SpravPokut({ onDataChange }: Props) {
                     {editingId === pokuta.id ? (
                       <input
                         type="text"
-                        defaultValue={pokuta.popis}
+                        value={editingData.popis}
+                        onChange={(e) => setEditingData(prev => ({ ...prev, popis: e.target.value }))}
                         className="w-full px-2 py-1 border border-gray-300 rounded text-black"
+                        placeholder="Popis pokuty"
                       />
                     ) : (
                       <div className="text-sm text-gray-600">{pokuta.popis}</div>
                     )}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     {editingId === pokuta.id ? (
-                      <button
-                        onClick={() => setEditingId(null)}
-                        className="text-green-600 hover:text-green-900"
-                      >
-                        Uložit
-                      </button>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={handleSave}
+                          className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-xs"
+                        >
+                          ✅ Uložit
+                        </button>
+                        <button
+                          onClick={handleCancelEdit}
+                          className="bg-gray-600 hover:bg-gray-700 text-white px-3 py-1 rounded text-xs"
+                        >
+                          ❌ Zrušit
+                        </button>
+                      </div>
                     ) : (
-                      <>
+                      <div className="flex gap-2">
                         <button
                           onClick={() => handleEdit(pokuta)}
                           className="text-blue-600 hover:text-blue-900"
@@ -272,7 +297,7 @@ export default function SpravPokut({ onDataChange }: Props) {
                         >
                           Smazat
                         </button>
-                      </>
+                      </div>
                     )}
                   </td>
                 </tr>
