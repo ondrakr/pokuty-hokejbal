@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { promises as fs } from 'fs';
-import path from 'path';
-import { Pokuta } from '../../../../../types';
+import { supabase } from '../../../../lib/supabase';
 
 export async function DELETE(
   request: NextRequest,
@@ -11,24 +9,19 @@ export async function DELETE(
     const resolvedParams = await params;
     const id = parseInt(resolvedParams.id);
 
-    // Načtení existujících pokut
-    const pokutyPath = path.join(process.cwd(), 'data/pokuty.json');
-    const pokutyData = await fs.readFile(pokutyPath, 'utf8');
-    const pokuty: Pokuta[] = JSON.parse(pokutyData);
+    // Smazání pokuty z Supabase
+    const { error } = await supabase
+      .from('pokuty')
+      .delete()
+      .eq('id', id);
 
-    // Najití a smazání pokuty
-    const pokutaIndex = pokuty.findIndex(p => p.id === id);
-    if (pokutaIndex === -1) {
+    if (error) {
+      console.error('Chyba při mazání pokuty:', error);
       return NextResponse.json(
-        { error: 'Pokuta nenalezena' },
-        { status: 404 }
+        { error: 'Chyba při mazání pokuty' },
+        { status: 500 }
       );
     }
-
-    pokuty.splice(pokutaIndex, 1);
-
-    // Uložení zpět do souboru
-    await fs.writeFile(pokutyPath, JSON.stringify(pokuty, null, 2));
 
     return NextResponse.json({ message: 'Pokuta smazána' });
   } catch (error) {

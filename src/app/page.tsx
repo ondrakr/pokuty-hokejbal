@@ -1,19 +1,27 @@
-import { promises as fs } from 'fs';
-import path from 'path';
-import { Hrac, Pokuta } from '../../types';
+import { HracSPokutami, Pokuta } from '../../types';
 import EvidencePage from '@/components/EvidencePage';
 
 async function getData() {
-  const hraciPath = path.join(process.cwd(), 'data/hraci.json');
-  const pokutyPath = path.join(process.cwd(), 'data/pokuty.json');
+  const baseUrl = process.env.VERCEL_URL 
+    ? `https://${process.env.VERCEL_URL}` 
+    : 'http://localhost:3000';
   
-  const hraciData = await fs.readFile(hraciPath, 'utf8');
-  const pokutyData = await fs.readFile(pokutyPath, 'utf8');
-  
-  const hraci: Hrac[] = JSON.parse(hraciData);
-  const pokuty: Pokuta[] = JSON.parse(pokutyData);
-  
-  return { hraci, pokuty };
+  try {
+    const response = await fetch(`${baseUrl}/api/data`, {
+      cache: 'no-store' // Vždy načíst čerstvá data
+    });
+    
+    if (!response.ok) {
+      throw new Error('Chyba při načítání dat');
+    }
+    
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Chyba při načítání dat:', error);
+    // Fallback prázdná data
+    return { hraci: [], pokuty: [], platby: [] };
+  }
 }
 
 export default async function Home() {

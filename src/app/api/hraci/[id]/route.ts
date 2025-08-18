@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { promises as fs } from 'fs';
-import path from 'path';
-import { Hrac } from '../../../../../types';
+import { supabase } from '../../../../lib/supabase';
 
 export async function PUT(
   request: NextRequest,
@@ -21,31 +19,30 @@ export async function PUT(
       );
     }
 
-    // Načtení existujících hráčů
-    const hraciPath = path.join(process.cwd(), 'data/hraci.json');
-    const hraciData = await fs.readFile(hraciPath, 'utf8');
-    const hraci: Hrac[] = JSON.parse(hraciData);
+    // Aktualizace hráče v Supabase
+    const { data: aktualizovanyHrac, error } = await supabase
+      .from('hraci')
+      .update({ jmeno, role, email: email || null })
+      .eq('id', id)
+      .select()
+      .single();
 
-    // Najití a aktualizace hráče
-    const hracIndex = hraci.findIndex(h => h.id === id);
-    if (hracIndex === -1) {
+    if (error) {
+      console.error('Chyba při aktualizaci hráče:', error);
+      return NextResponse.json(
+        { error: 'Chyba při aktualizaci hráče' },
+        { status: 500 }
+      );
+    }
+
+    if (!aktualizovanyHrac) {
       return NextResponse.json(
         { error: 'Hráč nenalezen' },
         { status: 404 }
       );
     }
 
-    hraci[hracIndex] = {
-      ...hraci[hracIndex],
-      jmeno,
-      role,
-      email: email || undefined
-    };
-
-    // Uložení zpět do souboru
-    await fs.writeFile(hraciPath, JSON.stringify(hraci, null, 2));
-
-    return NextResponse.json(hraci[hracIndex]);
+    return NextResponse.json(aktualizovanyHrac);
   } catch (error) {
     console.error('Chyba při aktualizaci hráče:', error);
     return NextResponse.json(
@@ -63,24 +60,19 @@ export async function DELETE(
     const resolvedParams = await params;
     const id = parseInt(resolvedParams.id);
 
-    // Načtení existujících hráčů
-    const hraciPath = path.join(process.cwd(), 'data/hraci.json');
-    const hraciData = await fs.readFile(hraciPath, 'utf8');
-    const hraci: Hrac[] = JSON.parse(hraciData);
+    // Smazání hráče z Supabase
+    const { error } = await supabase
+      .from('hraci')
+      .delete()
+      .eq('id', id);
 
-    // Najití a smazání hráče
-    const hracIndex = hraci.findIndex(h => h.id === id);
-    if (hracIndex === -1) {
+    if (error) {
+      console.error('Chyba při mazání hráče:', error);
       return NextResponse.json(
-        { error: 'Hráč nenalezen' },
-        { status: 404 }
+        { error: 'Chyba při mazání hráče' },
+        { status: 500 }
       );
     }
-
-    hraci.splice(hracIndex, 1);
-
-    // Uložení zpět do souboru
-    await fs.writeFile(hraciPath, JSON.stringify(hraci, null, 2));
 
     return NextResponse.json({ message: 'Hráč smazán' });
   } catch (error) {

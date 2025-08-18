@@ -1,29 +1,26 @@
-import { promises as fs } from 'fs';
-import path from 'path';
-import { Hrac, Pokuta } from '../../../types';
+import { Hrac, Pokuta, Platba } from '../../../types';
 import AdminPage from '../../components/AdminPage';
 
 async function getData() {
+  const baseUrl = process.env.VERCEL_URL 
+    ? `https://${process.env.VERCEL_URL}` 
+    : 'http://localhost:3000';
+  
   try {
-    const hraciPath = path.join(process.cwd(), 'data/hraci.json');
-    const pokutyPath = path.join(process.cwd(), 'data/pokuty.json');
-    const platbyPath = path.join(process.cwd(), 'data/platby.json');
-
-    const hraciData = await fs.readFile(hraciPath, 'utf8');
-    const pokutyData = await fs.readFile(pokutyPath, 'utf8');
+    const response = await fetch(`${baseUrl}/api/data`, {
+      cache: 'no-store' // Vždy načíst čerstvá data
+    });
     
-    let platbyData;
-    try {
-      platbyData = await fs.readFile(platbyPath, 'utf8');
-    } catch {
-      platbyData = '[]';
+    if (!response.ok) {
+      throw new Error('Chyba při načítání dat');
     }
-
-    const hraci: Hrac[] = JSON.parse(hraciData);
-    const pokuty: Pokuta[] = JSON.parse(pokutyData);
-    const platby = JSON.parse(platbyData);
-
-    return { hraci, pokuty, platby };
+    
+    const data = await response.json();
+    return {
+      hraci: data.hraci.map((h: any) => ({ id: h.id, jmeno: h.jmeno, role: h.role, email: h.email })),
+      pokuty: data.pokuty,
+      platby: data.platby
+    };
   } catch (error) {
     console.error('Chyba při načítání dat:', error);
     return { hraci: [], pokuty: [], platby: [] };

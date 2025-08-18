@@ -1,7 +1,37 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { promises as fs } from 'fs';
-import path from 'path';
-import { Pokuta } from '../../../../types';
+import { supabase } from '../../../lib/supabase';
+
+export async function GET() {
+  try {
+    const { data: pokuty, error } = await supabase
+      .from('pokuty')
+      .select(`
+        *,
+        hraci (
+          id,
+          jmeno,
+          role
+        )
+      `)
+      .order('datum', { ascending: false });
+
+    if (error) {
+      console.error('Chyba při načítání pokut:', error);
+      return NextResponse.json(
+        { error: 'Chyba při načítání pokut' },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json(pokuty);
+  } catch (error) {
+    console.error('Chyba serveru:', error);
+    return NextResponse.json(
+      { error: 'Chyba serveru' },
+      { status: 500 }
+    );
+  }
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -16,26 +46,26 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Načtení existujících pokut
-    const pokutyPath = path.join(process.cwd(), 'data/pokuty.json');
-    const pokutyData = await fs.readFile(pokutyPath, 'utf8');
-    const pokuty: Pokuta[] = JSON.parse(pokutyData);
+    // Přidání nové pokuty do Supabase
+    const { data: novaPokuta, error } = await supabase
+      .from('pokuty')
+      .insert([{
+        hrac_id: parseInt(hracId),
+        typ,
+        castka: parseInt(castka),
+        datum: new Date().toISOString().split('T')[0],
+        zaplaceno: false
+      }])
+      .select()
+      .single();
 
-    // Vytvoření nové pokuty
-    const novaPokuta: Pokuta = {
-      id: Math.max(...pokuty.map(p => p.id), 0) + 1,
-      hracId: parseInt(hracId),
-      typ,
-      castka: parseInt(castka),
-      datum: new Date().toISOString().split('T')[0],
-      zaplaceno: false
-    };
-
-    // Přidání nové pokuty
-    pokuty.push(novaPokuta);
-
-    // Uložení zpět do souboru
-    await fs.writeFile(pokutyPath, JSON.stringify(pokuty, null, 2));
+    if (error) {
+      console.error('Chyba při přidávání pokuty:', error);
+      return NextResponse.json(
+        { error: 'Chyba při přidávání pokuty' },
+        { status: 500 }
+      );
+    }
 
     return NextResponse.json(novaPokuta, { status: 201 });
   } catch (error) {
@@ -52,26 +82,30 @@ export async function PATCH(request: NextRequest) {
     const body = await request.json();
     const { id, zaplaceno } = body;
 
-    // Načtení existujících pokut
-    const pokutyPath = path.join(process.cwd(), 'data/pokuty.json');
-    const pokutyData = await fs.readFile(pokutyPath, 'utf8');
-    const pokuty: Pokuta[] = JSON.parse(pokutyData);
+    // Aktualizace pokuty v Supabase
+    const { data: aktualizovanaPokuta, error } = await supabase
+      .from('pokuty')
+      .update({ zaplaceno })
+      .eq('id', id)
+      .select()
+      .single();
 
-    // Najití a aktualizace pokuty
-    const pokutaIndex = pokuty.findIndex(p => p.id === id);
-    if (pokutaIndex === -1) {
+    if (error) {
+      console.error('Chyba při aktualizaci pokuty:', error);
+      return NextResponse.json(
+        { error: 'Chyba při aktualizaci pokuty' },
+        { status: 500 }
+      );
+    }
+
+    if (!aktualizovanaPokuta) {
       return NextResponse.json(
         { error: 'Pokuta nenalezena' },
         { status: 404 }
       );
     }
 
-    pokuty[pokutaIndex].zaplaceno = zaplaceno;
-
-    // Uložení zpět do souboru
-    await fs.writeFile(pokutyPath, JSON.stringify(pokuty, null, 2));
-
-    return NextResponse.json(pokuty[pokutaIndex]);
+    return NextResponse.json(aktualizovanaPokuta);
   } catch (error) {
     console.error('Chyba při aktualizaci pokuty:', error);
     return NextResponse.json(

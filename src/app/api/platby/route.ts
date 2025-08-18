@@ -1,7 +1,37 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { promises as fs } from 'fs';
-import path from 'path';
-import { Platba } from '../../../../types';
+import { supabase } from '../../../lib/supabase';
+
+export async function GET() {
+  try {
+    const { data: platby, error } = await supabase
+      .from('platby')
+      .select(`
+        *,
+        hraci (
+          id,
+          jmeno,
+          role
+        )
+      `)
+      .order('datum', { ascending: false });
+
+    if (error) {
+      console.error('Chyba při načítání plateb:', error);
+      return NextResponse.json(
+        { error: 'Chyba při načítání plateb' },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json(platby);
+  } catch (error) {
+    console.error('Chyba serveru:', error);
+    return NextResponse.json(
+      { error: 'Chyba serveru' },
+      { status: 500 }
+    );
+  }
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -16,24 +46,24 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Načtení existujících plateb
-    const platbyPath = path.join(process.cwd(), 'data/platby.json');
-    const platbyData = await fs.readFile(platbyPath, 'utf8');
-    const platby: Platba[] = JSON.parse(platbyData);
+    // Přidání nové platby do Supabase
+    const { data: novaPlatba, error } = await supabase
+      .from('platby')
+      .insert([{
+        hrac_id: parseInt(hracId),
+        castka: parseInt(castka),
+        datum: new Date().toISOString().split('T')[0],
+      }])
+      .select()
+      .single();
 
-    // Vytvoření nové platby
-    const novaPlatba: Platba = {
-      id: Math.max(...platby.map(p => p.id), 0) + 1,
-      hracId: parseInt(hracId),
-      castka: parseInt(castka),
-      datum: new Date().toISOString().split('T')[0],
-    };
-
-    // Přidání nové platby
-    platby.push(novaPlatba);
-
-    // Uložení zpět do souboru
-    await fs.writeFile(platbyPath, JSON.stringify(platby, null, 2));
+    if (error) {
+      console.error('Chyba při přidávání platby:', error);
+      return NextResponse.json(
+        { error: 'Chyba při přidávání platby' },
+        { status: 500 }
+      );
+    }
 
     return NextResponse.json(novaPlatba, { status: 201 });
   } catch (error) {

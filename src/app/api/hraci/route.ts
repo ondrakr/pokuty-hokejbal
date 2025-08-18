@@ -1,7 +1,31 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { promises as fs } from 'fs';
-import path from 'path';
+import { supabase } from '../../../lib/supabase';
 import { Hrac } from '../../../../types';
+
+export async function GET() {
+  try {
+    const { data: hraci, error } = await supabase
+      .from('hraci')
+      .select('*')
+      .order('id');
+
+    if (error) {
+      console.error('Chyba při načítání hráčů:', error);
+      return NextResponse.json(
+        { error: 'Chyba při načítání hráčů' },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json(hraci);
+  } catch (error) {
+    console.error('Chyba serveru:', error);
+    return NextResponse.json(
+      { error: 'Chyba serveru' },
+      { status: 500 }
+    );
+  }
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -16,24 +40,20 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Načtení existujících hráčů
-    const hraciPath = path.join(process.cwd(), 'data/hraci.json');
-    const hraciData = await fs.readFile(hraciPath, 'utf8');
-    const hraci: Hrac[] = JSON.parse(hraciData);
+    // Přidání nového hráče do Supabase
+    const { data: novyHrac, error } = await supabase
+      .from('hraci')
+      .insert([{ jmeno, role, email: email || null }])
+      .select()
+      .single();
 
-    // Vytvoření nového hráče
-    const novyHrac: Hrac = {
-      id: Math.max(...hraci.map(h => h.id), 0) + 1,
-      jmeno,
-      role,
-      email: email || undefined
-    };
-
-    // Přidání nového hráče
-    hraci.push(novyHrac);
-
-    // Uložení zpět do souboru
-    await fs.writeFile(hraciPath, JSON.stringify(hraci, null, 2));
+    if (error) {
+      console.error('Chyba při přidávání hráče:', error);
+      return NextResponse.json(
+        { error: 'Chyba při přidávání hráče' },
+        { status: 500 }
+      );
+    }
 
     return NextResponse.json(novyHrac, { status: 201 });
   } catch (error) {
