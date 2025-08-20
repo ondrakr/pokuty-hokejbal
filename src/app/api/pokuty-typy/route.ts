@@ -2,13 +2,22 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '../../../lib/supabase';
 
 // Získání všech typů pokut
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const { data: pokutyTypy, error } = await supabase
+    const { searchParams } = new URL(request.url);
+    const kategorieId = searchParams.get('kategorie_id');
+
+    let query = supabase
       .from('pokuty_typy')
       .select('*')
       .eq('aktivni', true)
       .order('nazev');
+
+    if (kategorieId) {
+      query = query.eq('kategorie_id', parseInt(kategorieId));
+    }
+
+    const { data: pokutyTypy, error } = await query;
 
     if (error) {
       console.error('Chyba při načítání typů pokut:', error);
@@ -32,12 +41,12 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { nazev, cena, popis } = body;
+    const { nazev, cena, popis, kategorieId, has_quantity, unit } = body;
 
     // Validace
-    if (!nazev || !cena) {
+    if (!nazev || !cena || !kategorieId) {
       return NextResponse.json(
-        { error: 'Chybí povinné údaje' },
+        { error: 'Chybí povinné údaje (nazev, cena, kategorieId)' },
         { status: 400 }
       );
     }
@@ -49,7 +58,10 @@ export async function POST(request: NextRequest) {
         nazev,
         cena: parseInt(cena),
         popis: popis || null,
-        aktivni: true
+        aktivni: true,
+        kategorie_id: kategorieId,
+        has_quantity: has_quantity || false,
+        unit: unit || null
       }])
       .select()
       .single();
@@ -76,7 +88,7 @@ export async function POST(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     const body = await request.json();
-    const { id, nazev, cena, popis } = body;
+    const { id, nazev, cena, popis, has_quantity, unit } = body;
 
     // Validace
     if (!id || !nazev || !cena) {
@@ -92,7 +104,9 @@ export async function PUT(request: NextRequest) {
       .update({
         nazev,
         cena: parseInt(cena),
-        popis: popis || null
+        popis: popis || null,
+        has_quantity: has_quantity || false,
+        unit: unit || null
       })
       .eq('id', id)
       .select()

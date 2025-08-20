@@ -1,8 +1,18 @@
+export interface Kategorie {
+  id: number;
+  nazev: string;
+  slug: string;
+  popis?: string;
+  aktivni: boolean;
+  poradi: number;
+}
+
 export interface Hrac {
   id: number;
   jmeno: string;
   role: 'hrac' | 'golman' | 'trener';
   email?: string;
+  kategorieId: number;
 }
 
 export interface Pokuta {
@@ -12,6 +22,7 @@ export interface Pokuta {
   castka: number;
   datum: string;
   zaplaceno: boolean;
+  kategorieId: number;
 }
 
 export interface Platba {
@@ -19,6 +30,7 @@ export interface Platba {
   hracId: number;
   castka: number;
   datum: string;
+  kategorieId: number;
 }
 
 export interface PokutaTyp {
@@ -29,6 +41,19 @@ export interface PokutaTyp {
   aktivni: boolean;
   has_quantity?: boolean;
   unit?: string;
+  kategorieId: number;
+}
+
+export interface Uzivatel {
+  id: number;
+  uzivatelske_jmeno: string;
+  role: 'hlavni_admin' | 'kategorie_admin';
+  kategorieId?: number;
+  aktivni: boolean;
+}
+
+export interface PrihlasenyUzivatel extends Uzivatel {
+  kategorie?: Kategorie;
 }
 
 export interface HracSPokutami extends Hrac {

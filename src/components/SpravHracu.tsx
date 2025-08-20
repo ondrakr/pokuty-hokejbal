@@ -10,19 +10,19 @@ interface Props {
 
 export default function SpravHracu({ hraci, onDataChange }: Props) {
   const [isAdding, setIsAdding] = useState(false);
-  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editingHrac, setEditingHrac] = useState<Hrac | null>(null);
+  const [deletingHrac, setDeletingHrac] = useState<Hrac | null>(null);
   const [formData, setFormData] = useState({
     jmeno: '',
-    role: 'hrac' as 'hrac' | 'golman' | 'trener',
-    email: ''
+    role: 'hrac' as 'hrac' | 'golman' | 'trener'
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     try {
-      const url = editingId ? `/api/hraci/${editingId}` : '/api/hraci';
-      const method = editingId ? 'PUT' : 'POST';
+      const url = editingHrac ? `/api/hraci/${editingHrac.id}` : '/api/hraci';
+      const method = editingHrac ? 'PUT' : 'POST';
       
       const response = await fetch(url, {
         method,
@@ -33,9 +33,7 @@ export default function SpravHracu({ hraci, onDataChange }: Props) {
       });
 
       if (response.ok) {
-        setFormData({ jmeno: '', role: 'hrac', email: '' });
-        setIsAdding(false);
-        setEditingId(null);
+        resetForm();
         onDataChange();
       } else {
         const error = await response.json();
@@ -49,22 +47,26 @@ export default function SpravHracu({ hraci, onDataChange }: Props) {
   const handleEdit = (hrac: Hrac) => {
     setFormData({
       jmeno: hrac.jmeno,
-      role: hrac.role,
-      email: hrac.email || ''
+      role: hrac.role
     });
-    setEditingId(hrac.id);
+    setEditingHrac(hrac);
     setIsAdding(true);
   };
 
-  const handleDelete = async (id: number) => {
-    if (!confirm('Opravdu chcete smazat tohoto hráče?')) return;
+  const handleDelete = (hrac: Hrac) => {
+    setDeletingHrac(hrac);
+  };
+
+  const confirmDelete = async () => {
+    if (!deletingHrac) return;
     
     try {
-      const response = await fetch(`/api/hraci/${id}`, {
+      const response = await fetch(`/api/hraci/${deletingHrac.id}`, {
         method: 'DELETE',
       });
 
       if (response.ok) {
+        setDeletingHrac(null);
         onDataChange();
       } else {
         alert('Chyba při mazání hráče');
@@ -75,9 +77,9 @@ export default function SpravHracu({ hraci, onDataChange }: Props) {
   };
 
   const resetForm = () => {
-    setFormData({ jmeno: '', role: 'hrac', email: '' });
+    setFormData({ jmeno: '', role: 'hrac' });
     setIsAdding(false);
-    setEditingId(null);
+    setEditingHrac(null);
   };
 
   return (
@@ -93,69 +95,60 @@ export default function SpravHracu({ hraci, onDataChange }: Props) {
         </button>
       </div>
 
-      {/* Formulář */}
+      {/* Modální okno pro přidání/editaci */}
       {isAdding && (
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h3 className="text-lg font-bold mb-4">
-            {editingId ? 'Upravit hráče' : 'Přidat nového hráče'}
-          </h3>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Jméno
-              </label>
-              <input
-                type="text"
-                value={formData.jmeno}
-                onChange={(e) => setFormData({ ...formData, jmeno: e.target.value })}
-                className="w-full p-3 border border-gray-300 rounded-md text-black"
-                required
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Role
-              </label>
-              <select
-                value={formData.role}
-                onChange={(e) => setFormData({ ...formData, role: e.target.value as any })}
-                className="w-full p-3 border border-gray-300 rounded-md text-black"
-              >
-                <option value="hrac">Hráč</option>
-                <option value="golman">Golman</option>
-                <option value="trener">Trenér</option>
-              </select>
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Email (volitelný)
-              </label>
-              <input
-                type="email"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                className="w-full p-3 border border-gray-300 rounded-md text-black"
-              />
-            </div>
-            
-            <div className="flex gap-2">
-              <button
-                type="submit"
-                className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md"
-              >
-                {editingId ? 'Uložit změny' : 'Přidat hráče'}
-              </button>
-              <button
-                type="button"
-                onClick={resetForm}
-                className="bg-gray-300 hover:bg-gray-400 text-gray-700 font-bold py-2 px-4 rounded-md"
-              >
-                Zrušit
-              </button>
-            </div>
-          </form>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-md mx-4">
+            <h3 className="text-lg font-bold mb-4 text-gray-900">
+              {editingHrac ? 'Upravit hráče' : 'Přidat nového hráče'}
+            </h3>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Jméno
+                </label>
+                <input
+                  type="text"
+                  value={formData.jmeno}
+                  onChange={(e) => setFormData({ ...formData, jmeno: e.target.value })}
+                  className="w-full p-3 border border-gray-300 rounded-md text-black focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  required
+                  autoFocus
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Role
+                </label>
+                <select
+                  value={formData.role}
+                  onChange={(e) => setFormData({ ...formData, role: e.target.value as any })}
+                  className="w-full p-3 border border-gray-300 rounded-md text-black focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="hrac">Hráč</option>
+                  <option value="golman">Golman</option>
+                  <option value="trener">Trenér</option>
+                </select>
+              </div>
+              
+              <div className="flex gap-2 pt-4">
+                <button
+                  type="submit"
+                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-md transition-colors"
+                >
+                  {editingHrac ? 'Uložit změny' : 'Přidat hráče'}
+                </button>
+                <button
+                  type="button"
+                  onClick={resetForm}
+                  className="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-4 rounded-md transition-colors"
+                >
+                  Zrušit
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
 
@@ -170,9 +163,6 @@ export default function SpravHracu({ hraci, onDataChange }: Props) {
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Role
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Email
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Akce
@@ -194,9 +184,6 @@ export default function SpravHracu({ hraci, onDataChange }: Props) {
                       {hrac.role === 'trener' ? 'Trenér' : hrac.role === 'golman' ? 'Golman' : 'Hráč'}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {hrac.email || '-'}
-                  </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
                     <button
                       onClick={() => handleEdit(hrac)}
@@ -205,7 +192,7 @@ export default function SpravHracu({ hraci, onDataChange }: Props) {
                       Upravit
                     </button>
                     <button
-                      onClick={() => handleDelete(hrac.id)}
+                      onClick={() => handleDelete(hrac)}
                       className="text-red-600 hover:text-red-900"
                     >
                       Smazat
@@ -217,6 +204,42 @@ export default function SpravHracu({ hraci, onDataChange }: Props) {
           </table>
         </div>
       </div>
+
+      {/* Potvrzovací modální okno pro smazání */}
+      {deletingHrac && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-md mx-4">
+            <div className="text-center">
+              <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
+                <svg className="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-bold text-gray-900 mb-2">
+                Smazat hráče
+              </h3>
+              <p className="text-gray-600 mb-6">
+                Opravdu chcete smazat hráče <strong>{deletingHrac.jmeno}</strong>?<br/>
+                Tato akce je nevratná.
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setDeletingHrac(null)}
+                  className="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-4 rounded-md transition-colors"
+                >
+                  Zrušit
+                </button>
+                <button
+                  onClick={confirmDelete}
+                  className="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded-md transition-colors"
+                >
+                  Smazat
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

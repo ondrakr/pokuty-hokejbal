@@ -2,12 +2,21 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '../../../lib/supabase';
 import { Hrac } from '../../../../types';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const { data: hraci, error } = await supabase
+    const { searchParams } = new URL(request.url);
+    const kategorieId = searchParams.get('kategorie_id');
+
+    let query = supabase
       .from('hraci')
       .select('*')
       .order('id');
+
+    if (kategorieId) {
+      query = query.eq('kategorie_id', parseInt(kategorieId));
+    }
+
+    const { data: hraci, error } = await query;
 
     if (error) {
       console.error('Chyba při načítání hráčů:', error);
@@ -30,12 +39,12 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { jmeno, role, email } = body;
+    const { jmeno, role, email, kategorieId } = body;
 
     // Validace
-    if (!jmeno || !role) {
+    if (!jmeno || !role || !kategorieId) {
       return NextResponse.json(
-        { error: 'Chybí povinné údaje' },
+        { error: 'Chybí povinné údaje (jméno, role, kategorieId)' },
         { status: 400 }
       );
     }
@@ -43,7 +52,12 @@ export async function POST(request: NextRequest) {
     // Přidání nového hráče do Supabase
     const { data: novyHrac, error } = await supabase
       .from('hraci')
-      .insert([{ jmeno, role, email: email || null }])
+      .insert([{ 
+        jmeno, 
+        role, 
+        email: email || null,
+        kategorie_id: kategorieId
+      }])
       .select()
       .single();
 

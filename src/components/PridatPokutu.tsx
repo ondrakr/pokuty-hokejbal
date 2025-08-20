@@ -1,11 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Hrac, PokutaTyp } from '../../types';
+import { Hrac, PokutaTyp, Kategorie } from '../../types';
 
 interface Props {
   hraci: Hrac[];
   onPokutaPridana: () => void;
+  kategorie?: Kategorie;
 }
 
 interface PokutaItem {
@@ -19,7 +20,7 @@ interface PokutaItem {
   unit?: string;
 }
 
-export default function PridatPokutu({ hraci, onPokutaPridana }: Props) {
+export default function PridatPokutu({ hraci, onPokutaPridana, kategorie }: Props) {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedHracId, setSelectedHracId] = useState('');
   const [pokuty, setPokuty] = useState<Record<number, PokutaItem>>({});
@@ -30,7 +31,10 @@ export default function PridatPokutu({ hraci, onPokutaPridana }: Props) {
   useEffect(() => {
     const loadTypyPokut = async () => {
       try {
-        const response = await fetch('/api/pokuty-typy');
+        const url = kategorie 
+          ? `/api/pokuty-typy?kategorie_id=${kategorie.id}` 
+          : '/api/pokuty-typy';
+        const response = await fetch(url);
         if (response.ok) {
           const typyPokut: PokutaTyp[] = await response.json();
           
@@ -58,7 +62,7 @@ export default function PridatPokutu({ hraci, onPokutaPridana }: Props) {
     };
 
     loadTypyPokut();
-  }, []);
+  }, [kategorie]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -91,6 +95,7 @@ export default function PridatPokutu({ hraci, onPokutaPridana }: Props) {
             hracId: selectedHracId,
             typ: pokuta.nazev,
             castka: finalCastka,
+            kategorieId: kategorie?.id,
           }),
         });
 
@@ -235,14 +240,7 @@ export default function PridatPokutu({ hraci, onPokutaPridana }: Props) {
                         const baseCastka = pokuta.vlastniCastka !== undefined ? pokuta.vlastniCastka : pokuta.castka;
                         const finalAmount = pokuta.quantity ? baseCastka * pokuta.quantity : baseCastka;
                       
-                        // Zjistíme roli vybraného hráče
-                        const selectedHrac = hraci.find(h => h.id.toString() === selectedHracId);
-                        const isTrener = selectedHrac?.role === 'trener';
-                        
-                        // Pokud je trenér, zobrazíme jen "Trest pro trenéra" a "První start"
-                        if (isTrener && pokuta.nazev !== 'Trest pro trenéra' && pokuta.nazev !== 'První start') {
-                          return null;
-                        }
+                        // Všichni hráči (hráč, gólman, trenér) nyní vidí všechny pokuty
                       
                         return (
                           <div key={pokuta.id} className="p-2 bg-gray-50 rounded">

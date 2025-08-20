@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 interface Props {
   title: string;
@@ -16,8 +17,14 @@ export default function MobileHeader({ title, showMenu = true }: Props) {
       <header className="sticky top-0 bg-blue-600 text-white shadow-lg z-40">
         <div className="flex items-center justify-between p-4">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center">
-              <span className="text-blue-600 font-bold text-lg">🏒</span>
+            <div className="w-8 h-8 bg-white rounded-lg p-1">
+              <Image
+                src="/logo.png"
+                alt="Logo"
+                width={24}
+                height={24}
+                className="w-full h-full object-contain"
+              />
             </div>
             <h1 className="text-lg font-bold truncate">{title}</h1>
           </div>

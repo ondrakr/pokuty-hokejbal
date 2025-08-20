@@ -1,18 +1,59 @@
 'use client';
 
-import { useState } from 'react';
-import { PrihlasenyUzivatel } from '../../types';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { PrihlasenyUzivatel } from '../../../types';
+import Image from 'next/image';
 
-interface Props {
-  onLogin: (uzivatel: PrihlasenyUzivatel) => void;
-  kategorieSlug?: string; // Pro kategorie-specifické přihlášení
-}
-
-export default function LoginForm({ onLogin, kategorieSlug }: Props) {
+export default function UniversalLoginPage() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
+
+  // Kontrola, zda už není uživatel přihlášený
+  useEffect(() => {
+    const checkExistingLogin = () => {
+      const loggedIn = localStorage.getItem('admin_logged_in') === 'true';
+      const loginTime = localStorage.getItem('admin_login_time');
+      const userData = localStorage.getItem('admin_user_data');
+      
+      if (loggedIn && loginTime && userData) {
+        const now = Date.now();
+        const loginTimestamp = parseInt(loginTime);
+        const hoursPassed = (now - loginTimestamp) / (1000 * 60 * 60);
+        
+        if (hoursPassed <= 24) {
+          const user: PrihlasenyUzivatel = JSON.parse(userData);
+          redirectUserToDashboard(user);
+        } else {
+          // Přihlášení vypršelo
+          localStorage.removeItem('admin_logged_in');
+          localStorage.removeItem('admin_login_time');
+          localStorage.removeItem('admin_user_data');
+        }
+      }
+    };
+
+    checkExistingLogin();
+  }, []);
+
+  const redirectUserToDashboard = (uzivatel: PrihlasenyUzivatel) => {
+    if (uzivatel.role === 'hlavni_admin') {
+      // Hlavní admin -> přesměruj na hlavní admin stránku
+      router.push('/admin');
+    } else if (uzivatel.role === 'kategorie_admin' && uzivatel.kategorie?.slug) {
+      // Kategorie admin -> přesměruj na jeho kategorii
+      router.push(`/${uzivatel.kategorie.slug}/admin`);
+    } else {
+      // Fallback - něco je špatně
+      setError('Uživatel nemá přiřazenou správnou roli nebo kategorii');
+      localStorage.removeItem('admin_logged_in');
+      localStorage.removeItem('admin_login_time');
+      localStorage.removeItem('admin_user_data');
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,28 +82,19 @@ export default function LoginForm({ onLogin, kategorieSlug }: Props) {
 
       const uzivatel: PrihlasenyUzivatel = data.uzivatel;
 
-      // Kontrola, zda uživatel může přistupovat k této kategorii
-      if (kategorieSlug) {
-        // Pokud jsme na kategorie-specifické stránce
-        if (uzivatel.role === 'kategorie_admin' && uzivatel.kategorie?.slug !== kategorieSlug) {
-          setError('Nemáte oprávnění k přístupu do této kategorie');
-          setLoading(false);
-          return;
-        }
-      }
-
       // Uložení do localStorage
       localStorage.setItem('admin_logged_in', 'true');
       localStorage.setItem('admin_login_time', Date.now().toString());
       localStorage.setItem('admin_user_data', JSON.stringify(uzivatel));
 
-      onLogin(uzivatel);
+      // Přesměrování podle role
+      redirectUserToDashboard(uzivatel);
+
     } catch (error) {
       console.error('Chyba při přihlašování:', error);
       setError('Chyba při přihlašování');
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
   return (
@@ -71,12 +103,31 @@ export default function LoginForm({ onLogin, kategorieSlug }: Props) {
         <div className="bg-white rounded-lg shadow-lg p-8">
           {/* Header */}
           <div className="text-center mb-8">
+            <div className="flex justify-center mb-4">
+              <Image
+                src="/logo.png"
+                alt="Hokejbal Logo"
+                width={64}
+                height={64}
+                className="rounded-lg"
+              />
+            </div>
             <h1 className="text-2xl font-bold text-black mb-2">
               🔐 Přihlášení do administrace
             </h1>
-            <p className="text-black">
-              {kategorieSlug ? `Kategorie: ${kategorieSlug}` : 'Pokuty Hokejbal'}
+            <p className="text-gray-600">
+              Pokuty Hokejbal - Správa pokut
             </p>
+            
+            {/* Tlačítko zpět na hlavní stránku */}
+            <div className="mt-4">
+              <button
+                onClick={() => router.push('/')}
+                className="inline-flex items-center gap-2 px-4 py-2 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                ← Zpět na hlavní stránku
+              </button>
+            </div>
           </div>
 
           {/* Login Form */}
@@ -135,10 +186,7 @@ export default function LoginForm({ onLogin, kategorieSlug }: Props) {
             </button>
           </form>
 
-          {/* Footer */}
-          <div className="mt-8 text-center text-sm text-gray-500">
-            <p>Pokuty Junioři</p>
-          </div>
+
         </div>
       </div>
     </div>

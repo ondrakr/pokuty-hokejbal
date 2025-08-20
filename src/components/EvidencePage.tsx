@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Hrac, Pokuta, HracSPokutami } from '../../types';
+import { Hrac, Pokuta, HracSPokutami, Kategorie } from '../../types';
 import HraciSeznam from './HraciSeznam';
 import CenikPokut from './CenikPokut';
 import PridatPokutu from './PridatPokutu';
@@ -14,9 +14,11 @@ interface Props {
   initialHraci: HracSPokutami[];
   initialPokuty: Pokuta[];
   isLoggedIn?: boolean;
+  kategorie?: Kategorie;
+  kategorieSlug?: string;
 }
 
-export default function EvidencePage({ initialHraci, initialPokuty, isLoggedIn = false }: Props) {
+export default function EvidencePage({ initialHraci, initialPokuty, isLoggedIn = false, kategorie, kategorieSlug }: Props) {
   const [hraci] = useState<Hrac[]>(initialHraci.map(h => ({ id: h.id, jmeno: h.jmeno, role: h.role, email: h.email })));
   const [pokuty] = useState<Pokuta[]>(initialPokuty);
   const [hraciSPokutami, setHraciSPokutami] = useState<HracSPokutami[]>(initialHraci);
@@ -76,7 +78,7 @@ export default function EvidencePage({ initialHraci, initialPokuty, isLoggedIn =
     <>
       {/* Mobile Header - shown only on mobile */}
       <div className="lg:hidden">
-        <MobileHeader title={isLoggedIn ? "Pokuty Junioři - Admin" : "Pokuty Junioři"} />
+        <MobileHeader title={isLoggedIn ? `Pokuty ${kategorie?.nazev || 'Junioři'} - Admin` : `Pokuty ${kategorie?.nazev || 'Junioři'}`} />
       </div>
 
       {/* Mobile Layout */}
@@ -111,7 +113,7 @@ export default function EvidencePage({ initialHraci, initialPokuty, isLoggedIn =
           {isLoggedIn ? (
             <div className="space-y-3 mb-4">
               <div className="grid grid-cols-2 gap-3">
-                <PridatPokutu hraci={hraci} onPokutaPridana={handlePokutaPridana} />
+                <PridatPokutu hraci={hraci} onPokutaPridana={handlePokutaPridana} kategorie={kategorie} />
                 <button
                   onClick={() => setShowPriceList(true)}
                   className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-6 rounded-lg text-lg flex items-center gap-3 shadow-lg justify-center"
@@ -175,7 +177,7 @@ export default function EvidencePage({ initialHraci, initialPokuty, isLoggedIn =
                 </button>
               </div>
               <div className="p-4">
-                <CenikPokut />
+                <CenikPokut kategorie={kategorie} />
               </div>
             </div>
           </div>
@@ -208,14 +210,14 @@ export default function EvidencePage({ initialHraci, initialPokuty, isLoggedIn =
           {/* Desktop Header s informací o režimu */}
           {isLoggedIn && (
             <div className="mb-6 text-center">
-              <PridatPokutu hraci={hraci} onPokutaPridana={handlePokutaPridana} />
+              <PridatPokutu hraci={hraci} onPokutaPridana={handlePokutaPridana} kategorie={kategorie} />
             </div>
           )}
           
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             {/* Levý sloupec - Ceník pokut a QR kód */}
             <div className="lg:col-span-1">
-              <CenikPokut />
+              <CenikPokut kategorie={kategorie} />
               <QRKodSekce />
             </div>
             

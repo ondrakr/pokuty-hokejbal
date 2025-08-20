@@ -1,19 +1,29 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '../../../lib/supabase';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const { data: platby, error } = await supabase
+    const { searchParams } = new URL(request.url);
+    const kategorieId = searchParams.get('kategorie_id');
+
+    let query = supabase
       .from('platby')
       .select(`
         *,
         hraci (
           id,
           jmeno,
-          role
+          role,
+          kategorie_id
         )
       `)
       .order('datum', { ascending: false });
+
+    if (kategorieId) {
+      query = query.eq('kategorie_id', parseInt(kategorieId));
+    }
+
+    const { data: platby, error } = await query;
 
     if (error) {
       console.error('Chyba při načítání plateb:', error);
@@ -36,12 +46,12 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { hracId, castka } = body;
+    const { hracId, castka, kategorieId } = body;
 
     // Validace
-    if (!hracId || !castka) {
+    if (!hracId || !castka || !kategorieId) {
       return NextResponse.json(
-        { error: 'Chybí povinné údaje' },
+        { error: 'Chybí povinné údaje (hracId, castka, kategorieId)' },
         { status: 400 }
       );
     }
@@ -53,6 +63,7 @@ export async function POST(request: NextRequest) {
         hrac_id: parseInt(hracId),
         castka: parseInt(castka),
         datum: new Date().toISOString().split('T')[0],
+        kategorie_id: kategorieId
       }])
       .select()
       .single();

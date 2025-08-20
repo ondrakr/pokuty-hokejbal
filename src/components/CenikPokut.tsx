@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { Kategorie } from '../../types';
 
 interface PokutaTyp {
   id: number;
@@ -9,14 +10,21 @@ interface PokutaTyp {
   popis?: string;
 }
 
-export default function CenikPokut() {
+interface Props {
+  kategorie?: Kategorie;
+}
+
+export default function CenikPokut({ kategorie }: Props) {
   const [pokutyCenik, setPokutyCenik] = useState<PokutaTyp[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const loadCenik = async () => {
       try {
-        const response = await fetch('/api/pokuty-typy');
+        const url = kategorie 
+          ? `/api/pokuty-typy?kategorie_id=${kategorie.id}` 
+          : '/api/pokuty-typy';
+        const response = await fetch(url);
         if (response.ok) {
           const data = await response.json();
           setPokutyCenik(data);
@@ -29,20 +37,12 @@ export default function CenikPokut() {
     };
 
     loadCenik();
-  }, []);
+  }, [kategorie]);
   return (
     <div className="bg-white rounded-lg shadow-lg overflow-hidden">
       {/* Header s logem a názvem */}
       <div className="bg-blue-600 text-white p-3">
-        <div className="flex items-center gap-2 mb-2">
-          <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
-            <div className="text-blue-600 font-bold text-lg">🦌</div>
-          </div>
-          <div>
-            <h1 className="text-xl font-bold">POKUTY</h1>
-            <p className="text-sm text-blue-100">JUNIOŘI</p>
-          </div>
-        </div>
+        <h2 className="text-lg font-bold">Seznam pokut</h2>
       </div>
 
       {/* Seznam pokut */}
