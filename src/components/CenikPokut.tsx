@@ -57,7 +57,7 @@ export default function CenikPokut({ kategorie }: Props) {
               <div key={pokuta.id} className="flex justify-between items-center py-1.5 border-b border-gray-100 last:border-b-0">
                 <span className="text-gray-800 text-sm font-medium">{pokuta.nazev}</span>
                 <span className="text-sm font-bold text-blue-600">
-                  {pokuta.nazev.includes('příchod') ? `${pokuta.cena} Kč/min` : `${pokuta.cena} Kč`}
+                  {pokuta.cena} Kč{pokuta.has_quantity && pokuta.unit ? `/${pokuta.unit}` : ''}
                 </span>
               </div>
             ))}
