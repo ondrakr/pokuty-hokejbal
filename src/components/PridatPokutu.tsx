@@ -239,8 +239,8 @@ export default function PridatPokutu({ hraci, onPokutaPridana }: Props) {
                         const selectedHrac = hraci.find(h => h.id.toString() === selectedHracId);
                         const isTrener = selectedHrac?.role === 'trener';
                         
-                        // Pokud je trenér, zobrazíme jen "Trest pro trenéra"
-                        if (isTrener && pokuta.nazev !== 'Trest pro trenéra') {
+                        // Pokud je trenér, zobrazíme jen "Trest pro trenéra" a "První start"
+                        if (isTrener && pokuta.nazev !== 'Trest pro trenéra' && pokuta.nazev !== 'První start') {
                           return null;
                         }
                       
