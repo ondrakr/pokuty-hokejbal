@@ -197,7 +197,7 @@ export default function EvidencePage({ initialHraci, initialPokuty, isLoggedIn =
                 </button>
               </div>
               <div className="p-4">
-                <QRKodSekce />
+                <QRKodSekce kategorie={kategorie} />
               </div>
             </div>
           </div>
@@ -218,7 +218,7 @@ export default function EvidencePage({ initialHraci, initialPokuty, isLoggedIn =
             {/* Levý sloupec - Ceník pokut a QR kód */}
             <div className="lg:col-span-1">
               <CenikPokut kategorie={kategorie} />
-              <QRKodSekce />
+              <QRKodSekce kategorie={kategorie} />
             </div>
             
             {/* Pravý sloupec - Seznam hráčů */}

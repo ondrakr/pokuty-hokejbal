@@ -36,6 +36,7 @@ export default function PlatebniModal({ isOpen, onClose, hrac, zbyva, onPlatbaPr
         body: JSON.stringify({
           hracId: hrac.id,
           castka: platbaCastka,
+          kategorieId: hrac.kategorieId,
         }),
       });
 
