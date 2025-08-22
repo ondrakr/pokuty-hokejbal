@@ -107,7 +107,7 @@ export default function SpravHracu({ hraci, onDataChange, kategorie }: Props) {
 
       {/* Modální okno pro přidání/editaci */}
       {isAdding && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 flex items-center justify-center z-50" style={{backgroundColor: 'rgba(0, 0, 0, 0.2)', backdropFilter: 'blur(4px)'}}>
           <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-md mx-4">
             <h3 className="text-lg font-bold mb-4 text-gray-900">
               {editingHrac ? 'Upravit hráče' : 'Přidat nového hráče'}
@@ -217,7 +217,7 @@ export default function SpravHracu({ hraci, onDataChange, kategorie }: Props) {
 
       {/* Potvrzovací modální okno pro smazání */}
       {deletingHrac && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 flex items-center justify-center z-50" style={{backgroundColor: 'rgba(0, 0, 0, 0.2)', backdropFilter: 'blur(4px)'}}>
           <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-md mx-4">
             <div className="text-center">
               <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">

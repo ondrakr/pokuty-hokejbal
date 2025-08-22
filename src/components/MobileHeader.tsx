@@ -46,7 +46,7 @@ export default function MobileHeader({ title, showMenu = true }: Props) {
 
       {/* Mobile Menu Overlay */}
       {isMenuOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-30 backdrop-blur-sm z-30" onClick={() => setIsMenuOpen(false)}>
+        <div className="fixed inset-0 z-30" style={{backgroundColor: 'rgba(0, 0, 0, 0.2)', backdropFilter: 'blur(4px)'}} onClick={() => setIsMenuOpen(false)}>
           <div className="absolute top-20 right-4 bg-white rounded-lg shadow-xl p-4 min-w-[200px]">
             <div className="space-y-3">
               <Link 

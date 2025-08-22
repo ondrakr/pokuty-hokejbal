@@ -165,10 +165,10 @@ export default function EvidencePage({ initialHraci, initialPokuty, isLoggedIn =
 
         {/* Mobile Price List Modal */}
         {showPriceList && (
-          <div className="fixed inset-0 bg-black bg-opacity-30 backdrop-blur-sm z-50 flex items-end">
+          <div className="fixed inset-0 z-50 flex items-end" style={{backgroundColor: 'rgba(0, 0, 0, 0.2)', backdropFilter: 'blur(4px)'}}>
             <div className="bg-white w-full rounded-t-xl max-h-[80vh] overflow-y-auto">
               <div className="sticky top-0 bg-white border-b p-4 flex justify-between items-center">
-                <h3 className="text-lg font-bold">📋 Ceník pokut</h3>
+                <h3 className="text-lg font-bold text-black">📋 Ceník pokut</h3>
                 <button
                   onClick={() => setShowPriceList(false)}
                   className="text-gray-400 hover:text-gray-600 text-xl"
@@ -185,7 +185,7 @@ export default function EvidencePage({ initialHraci, initialPokuty, isLoggedIn =
 
         {/* Mobile QR Code Modal */}
         {showQRModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-30 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{backgroundColor: 'rgba(0, 0, 0, 0.2)', backdropFilter: 'blur(4px)'}}>
             <div className="bg-white rounded-xl max-w-sm w-full">
               <div className="p-4 border-b flex justify-between items-center">
                 <h3 className="text-lg font-bold">📱 QR kód pro platby</h3>
