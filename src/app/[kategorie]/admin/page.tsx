@@ -15,8 +15,9 @@ export default function KategorieAdminPage() {
   const [kategorie, setKategorie] = useState<Kategorie | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null); // null = checking, false = not logged, true = logged
   const [currentUser, setCurrentUser] = useState<PrihlasenyUzivatel | null>(null);
+  const [authChecked, setAuthChecked] = useState(false);
 
   // Kontrola přihlášení
   useEffect(() => {
@@ -35,19 +36,24 @@ export default function KategorieAdminPage() {
           
           // Kontrola oprávnění pro kategorii
           if (user.role === 'kategorie_admin' && user.kategorie?.slug !== kategorieSlug) {
-            // Uživatel nemá oprávnění k této kategorii - přesměruj na login
-            window.location.href = '/login';
+            // Uživatel nemá oprávnění k této kategorii - odhlásíme ho
+            localStorage.removeItem('admin_logged_in');
+            localStorage.removeItem('admin_login_time');
+            localStorage.removeItem('admin_user_data');
             return;
           }
           
           // Hlavní admin má přístup ke všem kategoriím
           if (user.role !== 'hlavni_admin' && user.role !== 'kategorie_admin') {
-            window.location.href = '/login';
+            localStorage.removeItem('admin_logged_in');
+            localStorage.removeItem('admin_login_time');
+            localStorage.removeItem('admin_user_data');
             return;
           }
           
           setCurrentUser(user);
           setIsLoggedIn(true);
+          setAuthChecked(true);
           return;
         } else {
           // Přihlášení vypršelo
@@ -57,8 +63,9 @@ export default function KategorieAdminPage() {
         }
       }
       
-      // Přesměruj na univerzální login
-      window.location.href = '/login';
+      // Uživatel není přihlášen
+      setIsLoggedIn(false);
+      setAuthChecked(true);
     };
 
     checkLogin();
@@ -66,7 +73,7 @@ export default function KategorieAdminPage() {
 
   useEffect(() => {
     const loadData = async () => {
-      if (!kategorieSlug || !isLoggedIn) return;
+      if (!kategorieSlug || isLoggedIn !== true) return;
       
       try {
         // Načtení informací o kategorii
@@ -102,22 +109,41 @@ export default function KategorieAdminPage() {
   }, [kategorieSlug, isLoggedIn]);
 
   const handleLogin = (uzivatel: PrihlasenyUzivatel) => {
-    // Tato funkce už není potřeba, protože přihlašování se dělá na /login
+    // Kontrola oprávnění
+    if (uzivatel.role === 'kategorie_admin' && uzivatel.kategorie?.slug !== kategorieSlug) {
+      alert('Nemáte oprávnění k této kategorii');
+      return;
+    }
+    
+    if (uzivatel.role !== 'hlavni_admin' && uzivatel.role !== 'kategorie_admin') {
+      alert('Nemáte oprávnění k administraci');
+      return;
+    }
+    
+    // Uložení do localStorage
+    localStorage.setItem('admin_logged_in', 'true');
+    localStorage.setItem('admin_login_time', Date.now().toString());
+    localStorage.setItem('admin_user_data', JSON.stringify(uzivatel));
+    
     setCurrentUser(uzivatel);
     setIsLoggedIn(true);
   };
 
-  // Pokud není přihlášen, už je přesměrován na /login v useEffect
-  // Zde jen loading state zatímco probíhá přesměrování
-  if (!isLoggedIn) {
+  // Pokud se ještě kontroluje přihlášení, zobrazíme loading
+  if (!authChecked) {
     return (
       <div className="min-h-screen bg-gray-100 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Přesměrováváme na přihlášení...</p>
+          <p className="text-gray-600">Načítám...</p>
         </div>
       </div>
     );
+  }
+
+  // Pokud není přihlášen, zobrazíme login formulář
+  if (isLoggedIn === false) {
+    return <LoginForm onLogin={handleLogin} kategorieSlug={kategorieSlug} />;
   }
 
   if (loading) {

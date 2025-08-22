@@ -1,14 +1,15 @@
 'use client';
 
 import { useState } from 'react';
-import { Hrac } from '../../types';
+import { Hrac, Kategorie } from '../../types';
 
 interface Props {
   hraci: Hrac[];
   onDataChange: () => void;
+  kategorie?: Kategorie;
 }
 
-export default function SpravHracu({ hraci, onDataChange }: Props) {
+export default function SpravHracu({ hraci, onDataChange, kategorie }: Props) {
   const [isAdding, setIsAdding] = useState(false);
   const [editingHrac, setEditingHrac] = useState<Hrac | null>(null);
   const [deletingHrac, setDeletingHrac] = useState<Hrac | null>(null);
@@ -20,6 +21,12 @@ export default function SpravHracu({ hraci, onDataChange }: Props) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Kontrola kategorie pro nové hráče
+    if (!editingHrac && !kategorie?.id) {
+      alert('Chyba: Není zadána kategorie pro nového hráče');
+      return;
+    }
+    
     try {
       const url = editingHrac ? `/api/hraci/${editingHrac.id}` : '/api/hraci';
       const method = editingHrac ? 'PUT' : 'POST';
@@ -29,7 +36,10 @@ export default function SpravHracu({ hraci, onDataChange }: Props) {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          kategorieId: kategorie?.id
+        }),
       });
 
       if (response.ok) {

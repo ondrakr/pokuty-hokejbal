@@ -18,6 +18,24 @@ interface Props {
 
 export default function AdminPage({ initialHraci, initialPokuty, kategorie, kategorieSlug, currentUser }: Props) {
   const [activeTab, setActiveTab] = useState<'hraci' | 'pokuty'>('hraci');
+  const [hraci, setHraci] = useState<Hrac[]>(initialHraci);
+  const [pokuty, setPokuty] = useState<Pokuta[]>(initialPokuty);
+
+  const handleDataRefresh = async () => {
+    if (!kategorieSlug || !kategorie) return;
+    
+    try {
+      // Načtení aktuálních dat ze serveru
+      const response = await fetch(`/api/data/${kategorieSlug}`);
+      if (response.ok) {
+        const data = await response.json();
+        setHraci(data.hraci || []);
+        setPokuty(data.pokuty || []);
+      }
+    } catch (error) {
+      console.error('Chyba při načítání dat:', error);
+    }
+  };
 
   const handleLogout = () => {
     localStorage.removeItem('admin_logged_in');
@@ -37,6 +55,16 @@ export default function AdminPage({ initialHraci, initialPokuty, kategorie, kate
       {/* Mobile Layout */}
       <div className="lg:hidden bg-gray-100 min-h-screen">
         <div className="p-4">
+          {/* Mobile Back Button */}
+          <div className="mb-4">
+            <Link
+              href={kategorieSlug ? `/${kategorieSlug}` : "/"}
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 shadow-lg transition-colors"
+            >
+              ⬅️ {kategorieSlug ? `Zpět na ${kategorie?.nazev || 'kategorii'}` : 'Zpět na hlavní stránku'}
+            </Link>
+          </div>
+
           {/* Mobile Tab Buttons */}
           <div className="grid grid-cols-2 gap-3 mb-4">
             <button
@@ -63,19 +91,11 @@ export default function AdminPage({ initialHraci, initialPokuty, kategorie, kate
 
           {/* Mobile Content */}
           <div className="space-y-4">
-            {activeTab === 'hraci' && <SpravHracu hraci={initialHraci} onDataChange={() => window.location.reload()} kategorie={kategorie} />}
-            {activeTab === 'pokuty' && <SpravPokut onDataChange={() => window.location.reload()} kategorie={kategorie} />}
+            {activeTab === 'hraci' && <SpravHracu hraci={hraci} onDataChange={handleDataRefresh} kategorie={kategorie} />}
+            {activeTab === 'pokuty' && <SpravPokut onDataChange={handleDataRefresh} kategorie={kategorie} />}
           </div>
 
-          {/* Mobile Back Button */}
-          <div className="mt-6">
-            <Link
-              href={kategorieSlug ? `/${kategorieSlug}` : "/"}
-              className="w-full bg-gray-600 hover:bg-gray-700 text-white font-bold py-4 px-4 rounded-xl flex items-center justify-center gap-2 shadow-lg"
-            >
-              ⬅️ {kategorieSlug ? `Zpět na ${kategorie?.nazev || 'kategorii'}` : 'Zpět na hlavní stránku'}
-            </Link>
-          </div>
+
         </div>
       </div>
 
@@ -86,9 +106,17 @@ export default function AdminPage({ initialHraci, initialPokuty, kategorie, kate
             {/* Desktop Header */}
             <div className="bg-gray-800 text-white p-4">
               <div className="flex justify-between items-start">
-                <div>
-                  <h1 className="text-2xl font-bold">🔧 Administrace {kategorie ? `- ${kategorie.nazev}` : ''}</h1>
-                  <p className="text-gray-300 mt-1">Správa hráčů a pokut{kategorie ? ` pro kategorii ${kategorie.nazev}` : ''}</p>
+                <div className="flex items-center gap-4">
+                  <Link
+                    href={kategorieSlug ? `/${kategorieSlug}` : "/"}
+                    className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-3 rounded-lg transition-colors text-sm"
+                  >
+                    ⬅️ {kategorieSlug ? `Zpět na ${kategorie?.nazev || 'kategorii'}` : 'Zpět na hlavní stránku'}
+                  </Link>
+                  <div>
+                    <h1 className="text-2xl font-bold">🔧 Administrace {kategorie ? `- ${kategorie.nazev}` : ''}</h1>
+                    <p className="text-gray-300 mt-1">Správa hráčů a pokut{kategorie ? ` pro kategorii ${kategorie.nazev}` : ''}</p>
+                  </div>
                 </div>
                 {currentUser && (
                   <div className="text-right">
@@ -136,19 +164,11 @@ export default function AdminPage({ initialHraci, initialPokuty, kategorie, kate
 
             {/* Desktop Content */}
             <div className="p-6">
-              {activeTab === 'hraci' && <SpravHracu hraci={initialHraci} onDataChange={() => window.location.reload()} kategorie={kategorie} />}
-              {activeTab === 'pokuty' && <SpravPokut onDataChange={() => window.location.reload()} kategorie={kategorie} />}
+              {activeTab === 'hraci' && <SpravHracu hraci={hraci} onDataChange={handleDataRefresh} kategorie={kategorie} />}
+              {activeTab === 'pokuty' && <SpravPokut onDataChange={handleDataRefresh} kategorie={kategorie} />}
             </div>
 
-            {/* Desktop Back Button */}
-            <div className="p-6 border-t bg-gray-50">
-              <Link
-                href={kategorieSlug ? `/${kategorieSlug}` : "/"}
-                className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg"
-              >
-                ⬅️ {kategorieSlug ? `Zpět na ${kategorie?.nazev || 'kategorii'}` : 'Zpět na hlavní stránku'}
-              </Link>
-            </div>
+
           </div>
         </div>
       </div>

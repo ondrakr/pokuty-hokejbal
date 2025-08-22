@@ -6,8 +6,9 @@ import LoginForm from '@/components/LoginForm';
 import Link from 'next/link';
 
 export default function MainAdminPage() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null); // null = checking, false = not logged, true = logged
   const [currentUser, setCurrentUser] = useState<PrihlasenyUzivatel | null>(null);
+  const [authChecked, setAuthChecked] = useState(false);
 
   // Kontrola přihlášení
   useEffect(() => {
@@ -26,13 +27,16 @@ export default function MainAdminPage() {
           
           // Pouze hlavní administrátor má přístup k této stránce
           if (user.role !== 'hlavni_admin') {
-            // Přesměruj na univerzální login
-            window.location.href = '/login';
+            // Uživatel nemá oprávnění - odhlásíme ho
+            localStorage.removeItem('admin_logged_in');
+            localStorage.removeItem('admin_login_time');
+            localStorage.removeItem('admin_user_data');
             return;
           }
           
           setCurrentUser(user);
           setIsLoggedIn(true);
+          setAuthChecked(true);
           return;
         } else {
           // Přihlášení vypršelo
@@ -42,20 +46,26 @@ export default function MainAdminPage() {
         }
       }
       
-      // Přesměruj na univerzální login
-      window.location.href = '/login';
+      // Uživatel není přihlášen
+      setIsLoggedIn(false);
+      setAuthChecked(true);
     };
 
     checkLogin();
   }, []);
 
   const handleLogin = (uzivatel: PrihlasenyUzivatel) => {
-    // Tato funkce už není potřeba, protože přihlašování se dělá na /login
-    // Ale nechávám pro kompatibilitu
     if (uzivatel.role !== 'hlavni_admin') {
-      window.location.href = '/login';
+      // Nepovolená role - zobrazíme chybu
+      alert('Nemáte oprávnění k této stránce');
       return;
     }
+    
+    // Uložení do localStorage
+    localStorage.setItem('admin_logged_in', 'true');
+    localStorage.setItem('admin_login_time', Date.now().toString());
+    localStorage.setItem('admin_user_data', JSON.stringify(uzivatel));
+    
     setCurrentUser(uzivatel);
     setIsLoggedIn(true);
   };
@@ -66,21 +76,25 @@ export default function MainAdminPage() {
     localStorage.removeItem('admin_user_data');
     setIsLoggedIn(false);
     setCurrentUser(null);
-    // Okamžité přesměrování na login
-    window.location.href = '/login';
+    // Přesměrování na hlavní stránku
+    window.location.href = '/';
   };
 
-  // Pokud není přihlášen, už je přesměrován na /login v useEffect
-  // Zde jen loading state zatímco probíhá přesměrování
-  if (!isLoggedIn) {
+  // Pokud se ještě kontroluje přihlášení, zobrazíme loading
+  if (!authChecked) {
     return (
       <div className="min-h-screen bg-gray-100 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Přesměrováváme na přihlášení...</p>
+          <p className="text-gray-600">Načítám...</p>
         </div>
       </div>
     );
+  }
+
+  // Pokud není přihlášen, zobrazíme login formulář
+  if (isLoggedIn === false) {
+    return <LoginForm onLogin={handleLogin} kategorieSlug="admin" />;
   }
 
   return (
