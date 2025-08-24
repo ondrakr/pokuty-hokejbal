@@ -72,7 +72,7 @@ export default function LoginForm({ onLogin, kategorieSlug }: Props) {
           {/* Header */}
           <div className="text-center mb-8">
             <h1 className="text-2xl font-bold text-black mb-2">
-              🔐 Přihlášení do administrace
+              🔐 Přihlášení pro pokladníka
             </h1>
             <p className="text-black">
               {kategorieSlug ? `Kategorie: ${kategorieSlug}` : 'Pokuty Hokejbal'}

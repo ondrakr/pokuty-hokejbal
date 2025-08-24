@@ -8,9 +8,10 @@ interface Props {
   hraci: HracSPokutami[];
   onDataChange: () => void;
   readOnly?: boolean;
+  onOpenPridatPokutu?: (hrac: HracSPokutami) => void;
 }
 
-export default function HraciSeznam({ hraci, onDataChange, readOnly = false }: Props) {
+export default function HraciSeznam({ hraci, onDataChange, readOnly = false, onOpenPridatPokutu }: Props) {
   const [rozbaleniHraci, setRozbaleniHraci] = useState<Set<number>>(new Set());
   const [platebniModal, setPlatebniModal] = useState<{
     isOpen: boolean;
@@ -156,16 +157,32 @@ export default function HraciSeznam({ hraci, onDataChange, readOnly = false }: P
                         {hrac.zbyva} Kč
                       </p>
                     </div>
-                    {hrac.zbyva > 0 && !readOnly && (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          openPlatebniModal(hrac, hrac.zbyva);
-                        }}
-                        className="bg-green-600 hover:bg-green-700 text-white font-bold py-1 px-3 rounded text-xs"
-                      >
-                        Zaplaceno
-                      </button>
+                    {!readOnly && (
+                      <div className="flex gap-2">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (onOpenPridatPokutu) {
+                              onOpenPridatPokutu(hrac);
+                            }
+                          }}
+                          className="bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-2 rounded text-xs flex items-center"
+                          title="Přidat pokutu"
+                        >
+                          +
+                        </button>
+                        {hrac.zbyva > 0 && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              openPlatebniModal(hrac, hrac.zbyva);
+                            }}
+                            className="bg-green-600 hover:bg-green-700 text-white font-bold py-1 px-3 rounded text-xs"
+                          >
+                            Zaplaceno
+                          </button>
+                        )}
+                      </div>
                     )}
                    
                     <div className="ml-2">

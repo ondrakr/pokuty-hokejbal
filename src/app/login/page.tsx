@@ -113,7 +113,7 @@ export default function UniversalLoginPage() {
               />
             </div>
             <h1 className="text-2xl font-bold text-black mb-2">
-              🔐 Přihlášení do administrace
+              🔐 Přihlášení pro pokladníka
             </h1>
             <p className="text-gray-600">
               Pokuty Hokejbal - Správa pokut

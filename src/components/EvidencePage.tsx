@@ -33,6 +33,13 @@ export default function EvidencePage({ initialHraci, initialPokuty, isLoggedIn =
     zbyva: 0
   });
   const [showQRModal, setShowQRModal] = useState(false);
+  const [pridatPokutuModal, setPridatPokutuModal] = useState<{
+    isOpen: boolean;
+    predvybranyHrac: Hrac | null;
+  }>({
+    isOpen: false,
+    predvybranyHrac: null
+  });
 
   // Data už máme připravená z API, nemusíme nic přepočítávat
   useEffect(() => {
@@ -64,6 +71,27 @@ export default function EvidencePage({ initialHraci, initialPokuty, isLoggedIn =
       isOpen: false,
       hrac: null,
       zbyva: 0
+    });
+  };
+
+  // Funkce pro otevření modálu přidání pokuty s předvybraným hráčem
+  const openPridatPokutuModal = (hracSPokutami: HracSPokutami) => {
+    const hrac: Hrac = {
+      id: hracSPokutami.id,
+      jmeno: hracSPokutami.jmeno,
+      role: hracSPokutami.role,
+      email: hracSPokutami.email
+    };
+    setPridatPokutuModal({
+      isOpen: true,
+      predvybranyHrac: hrac
+    });
+  };
+
+  const closePridatPokutuModal = () => {
+    setPridatPokutuModal({
+      isOpen: false,
+      predvybranyHrac: null
     });
   };
 
@@ -223,7 +251,12 @@ export default function EvidencePage({ initialHraci, initialPokuty, isLoggedIn =
             
             {/* Pravý sloupec - Seznam hráčů */}
             <div className="lg:col-span-2">
-              <HraciSeznam hraci={sortedHraci} onDataChange={handleDataChange} readOnly={!isLoggedIn} />
+              <HraciSeznam 
+                hraci={sortedHraci} 
+                onDataChange={handleDataChange} 
+                readOnly={!isLoggedIn}
+                onOpenPridatPokutu={isLoggedIn ? openPridatPokutuModal : undefined}
+              />
             </div>
           </div>
         </div>
@@ -237,6 +270,18 @@ export default function EvidencePage({ initialHraci, initialPokuty, isLoggedIn =
         zbyva={platebniModal.zbyva}
         onPlatbaProvedena={handleDataChange}
       />
+
+      {/* Modál pro přidání pokuty s předvybraným hráčem */}
+      {pridatPokutuModal.isOpen && (
+        <PridatPokutu
+          hraci={hraci}
+          onPokutaPridana={handlePokutaPridana}
+          kategorie={kategorie}
+          predvybranyHrac={pridatPokutuModal.predvybranyHrac}
+          onClose={closePridatPokutuModal}
+          forceOpen={true}
+        />
+      )}
     </>
   );
 }

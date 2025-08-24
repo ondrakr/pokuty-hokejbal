@@ -200,7 +200,7 @@ export default function KategorieSelector() {
           href="/login"
           className="inline-flex items-center gap-2 px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white font-medium rounded-lg transition-colors"
         >
-          🔐 Přihlášení do administrace
+          🔐 Přihlášení pro pokladníka
         </Link>
       </div>
 
