@@ -173,10 +173,10 @@ export default function KategoriePage() {
                     </Link>
                   ) : (
                     <Link
-                      href={`/${kategorieSlug}/admin`}
+                      href={`/${kategorieSlug}/login`}
                       className="inline-flex items-center gap-2 bg-gray-600 hover:bg-gray-700 text-white font-medium py-2.5 px-5 rounded-lg transition-colors shadow-sm"
                     >
-                      🔐 Přihlášení
+                      Přihlásit se
                     </Link>
                   )}
                 </div>

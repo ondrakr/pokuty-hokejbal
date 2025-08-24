@@ -185,6 +185,7 @@ export default function EvidencePage({ initialHraci, initialPokuty, isLoggedIn =
                 key={hrac.id}
                 hrac={hrac}
                 onOpenPayment={isLoggedIn ? openPlatebniModal : undefined}
+                onOpenPridatPokutu={isLoggedIn ? openPridatPokutuModal : undefined}
                 readOnly={!isLoggedIn}
               />
             ))}

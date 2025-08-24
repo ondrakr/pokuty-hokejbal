@@ -6,10 +6,11 @@ import { HracSPokutami, Hrac } from '../../types';
 interface Props {
   hrac: HracSPokutami;
   onOpenPayment?: (hrac: Hrac, amount: number) => void;
+  onOpenPridatPokutu?: (hrac: HracSPokutami) => void;
   readOnly?: boolean;
 }
 
-export default function MobilePlayerCard({ hrac, onOpenPayment, readOnly = false }: Props) {
+export default function MobilePlayerCard({ hrac, onOpenPayment, onOpenPridatPokutu, readOnly = false }: Props) {
   const [isExpanded, setIsExpanded] = useState(false);
 
   const handleDeletePokuta = async (pokutaId: number) => {
@@ -119,18 +120,36 @@ export default function MobilePlayerCard({ hrac, onOpenPayment, readOnly = false
           </div>
         </div>
 
-        {/* Tlačítko pro platbu */}
-        {hrac.zbyva > 0 && !readOnly && onOpenPayment && (
+        {/* Tlačítka pro akce */}
+        {!readOnly && (onOpenPridatPokutu || (hrac.zbyva > 0 && onOpenPayment)) && (
           <div className="mt-4">
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onOpenPayment(hrac, hrac.zbyva);
-              }}
-              className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-xl shadow-md transition-all transform active:scale-95"
-            >
-              💰 Zaznamenat platbu
-            </button>
+            <div className="grid grid-cols-2 gap-2">
+              {/* Tlačítko pro přidání pokuty */}
+              {onOpenPridatPokutu && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onOpenPridatPokutu(hrac);
+                  }}
+                  className="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-2 rounded-xl shadow-md transition-all transform active:scale-95 text-sm"
+                >
+                  Přidat
+                </button>
+              )}
+              
+              {/* Tlačítko pro platbu */}
+              {hrac.zbyva > 0 && onOpenPayment && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onOpenPayment(hrac, hrac.zbyva);
+                  }}
+                  className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-2 rounded-xl shadow-md transition-all transform active:scale-95 text-sm"
+                >
+                  Zaznamenat platbu
+                </button>
+              )}
+            </div>
           </div>
         )}
         
