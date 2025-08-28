@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { HracSPokutami, Pokuta, Kategorie, FinancniPrehled } from '../../../types';
+import { HracSPokutami, Pokuta, Kategorie, FinancniPrehled, Vydaj } from '../../../types';
 import EvidencePage from '@/components/EvidencePage';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -14,7 +14,8 @@ export default function KategoriePage() {
   const [data, setData] = useState<{ 
     hraci: HracSPokutami[], 
     pokuty: Pokuta[], 
-    financniPrehled?: FinancniPrehled 
+    financniPrehled?: FinancniPrehled,
+    vydaje?: Vydaj[]
   }>({
     hraci: [],
     pokuty: []
@@ -197,6 +198,7 @@ export default function KategoriePage() {
           kategorie={kategorie}
           kategorieSlug={kategorieSlug}
           financniPrehled={data.financniPrehled}
+          vydaje={data.vydaje}
         />
 
         {/* Footer */}

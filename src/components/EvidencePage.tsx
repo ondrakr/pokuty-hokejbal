@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Hrac, Pokuta, HracSPokutami, Kategorie, FinancniPrehled } from '../../types';
+import { Hrac, Pokuta, HracSPokutami, Kategorie, FinancniPrehled, Vydaj } from '../../types';
 import HraciSeznam from './HraciSeznam';
 import CenikPokut from './CenikPokut';
 import PridatPokutu from './PridatPokutu';
@@ -9,6 +9,7 @@ import MobileHeader from './MobileHeader';
 import MobilePlayerCard from './MobilePlayerCard';
 import PlatebniModal from './PlatebniModal';
 import QRKodSekce from './QRKodSekce';
+import SeznamVydaju from './SeznamVydaju';
 
 interface Props {
   initialHraci: HracSPokutami[];
@@ -17,13 +18,15 @@ interface Props {
   kategorie?: Kategorie;
   kategorieSlug?: string;
   financniPrehled?: FinancniPrehled;
+  vydaje?: Vydaj[];
 }
 
-export default function EvidencePage({ initialHraci, initialPokuty, isLoggedIn = false, kategorie, kategorieSlug, financniPrehled }: Props) {
+export default function EvidencePage({ initialHraci, initialPokuty, isLoggedIn = false, kategorie, kategorieSlug, financniPrehled, vydaje = [] }: Props) {
   const [hraci] = useState<Hrac[]>(initialHraci.map(h => ({ id: h.id, jmeno: h.jmeno, role: h.role, email: h.email })));
   const [pokuty] = useState<Pokuta[]>(initialPokuty);
   const [hraciSPokutami, setHraciSPokutami] = useState<HracSPokutami[]>(initialHraci);
   const [showPriceList, setShowPriceList] = useState(false);
+  const [showVydajeList, setShowVydajeList] = useState(false);
   const [platebniModal, setPlatebniModal] = useState<{
     isOpen: boolean;
     hrac: Hrac | null;
@@ -182,30 +185,44 @@ export default function EvidencePage({ initialHraci, initialPokuty, isLoggedIn =
           {/* Mobile Action Buttons */}
           {isLoggedIn ? (
             <div className="space-y-3 mb-4">
-              <div className="grid grid-cols-2 gap-3">
-                <PridatPokutu hraci={hraci} onPokutaPridana={handlePokutaPridana} kategorie={kategorie} />
+              <PridatPokutu hraci={hraci} onPokutaPridana={handlePokutaPridana} kategorie={kategorie} />
+              <div className="grid grid-cols-3 gap-3">
                 <button
                   onClick={() => setShowPriceList(true)}
-                  className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-6 rounded-lg text-lg flex items-center gap-3 shadow-lg justify-center"
+                  className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-3 rounded-lg text-sm flex items-center gap-2 shadow-lg justify-center"
                 >
                   📋 Ceník
                 </button>
+                <button
+                  onClick={() => setShowVydajeList(true)}
+                  className="bg-red-600 hover:bg-red-700 text-white font-bold py-4 px-3 rounded-lg text-sm flex items-center gap-2 shadow-lg justify-center"
+                >
+                  💸 Výdaje
+                </button>
+                <button
+                  onClick={() => setShowQRModal(true)}
+                  className="bg-green-600 hover:bg-green-700 text-white font-bold py-4 px-3 rounded-lg text-sm flex items-center gap-2 shadow-lg justify-center"
+                >
+                  📱 QR kód
+                </button>
               </div>
-              <button
-                onClick={() => setShowQRModal(true)}
-                className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg text-base flex items-center gap-2 shadow-lg justify-center"
-              >
-                📱 Zobrazit QR kód
-              </button>
             </div>
           ) : (
             <div className="space-y-3 mb-4">
-              <button
-                onClick={() => setShowPriceList(true)}
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-6 rounded-lg text-lg flex items-center gap-3 shadow-lg justify-center"
-              >
-                📋 Ceník pokut
-              </button>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  onClick={() => setShowPriceList(true)}
+                  className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-4 rounded-lg text-base flex items-center gap-2 shadow-lg justify-center"
+                >
+                  📋 Ceník pokut
+                </button>
+                <button
+                  onClick={() => setShowVydajeList(true)}
+                  className="bg-red-600 hover:bg-red-700 text-white font-bold py-4 px-4 rounded-lg text-base flex items-center gap-2 shadow-lg justify-center"
+                >
+                  💸 Výdaje
+                </button>
+              </div>
               <button
                 onClick={() => setShowQRModal(true)}
                 className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg text-base flex items-center gap-2 shadow-lg justify-center"
@@ -254,6 +271,26 @@ export default function EvidencePage({ initialHraci, initialPokuty, isLoggedIn =
           </div>
         )}
 
+        {/* Mobile Expenses List Modal */}
+        {showVydajeList && (
+          <div className="fixed inset-0 z-50 flex items-end" style={{backgroundColor: 'rgba(0, 0, 0, 0.2)', backdropFilter: 'blur(4px)'}}>
+            <div className="bg-white w-full rounded-t-xl max-h-[80vh] overflow-y-auto">
+              <div className="sticky top-0 bg-white border-b p-4 flex justify-between items-center">
+                <h3 className="text-lg font-bold text-black">💸 Seznam výdajů</h3>
+                <button
+                  onClick={() => setShowVydajeList(false)}
+                  className="text-gray-400 hover:text-gray-600 text-xl"
+                >
+                  ✕
+                </button>
+              </div>
+              <div className="p-4">
+                <SeznamVydaju vydaje={vydaje} />
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Mobile QR Code Modal */}
         {showQRModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{backgroundColor: 'rgba(0, 0, 0, 0.2)', backdropFilter: 'blur(4px)'}}>
@@ -290,6 +327,18 @@ export default function EvidencePage({ initialHraci, initialPokuty, isLoggedIn =
             <div className="lg:col-span-1">
               <CenikPokut kategorie={kategorie} />
               <QRKodSekce kategorie={kategorie} />
+              
+              {/* Tlačítko pro výdaje (pouze pro nepřihlášené) */}
+              {!isLoggedIn && (
+                <div className="mt-4">
+                  <button
+                    onClick={() => setShowVydajeList(true)}
+                    className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded-lg flex items-center gap-2 shadow-lg justify-center"
+                  >
+                    💸 Zobrazit výdaje
+                  </button>
+                </div>
+              )}
             </div>
             
             {/* Pravý sloupec - Seznam hráčů */}
@@ -324,6 +373,15 @@ export default function EvidencePage({ initialHraci, initialPokuty, isLoggedIn =
           predvybranyHrac={pridatPokutuModal.predvybranyHrac}
           onClose={closePridatPokutuModal}
           forceOpen={true}
+        />
+      )}
+
+      {/* Desktop Modal pro výdaje */}
+      {showVydajeList && (
+        <SeznamVydaju 
+          vydaje={vydaje} 
+          showModal={true} 
+          onClose={() => setShowVydajeList(false)} 
         />
       )}
     </>
