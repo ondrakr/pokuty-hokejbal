@@ -260,13 +260,6 @@ export default function SpravVydaju({ kategorie, onDataChange }: Props) {
           ))
         )}
       </div>
-
-      {vydaje.length > 0 && (
-        <div className="text-sm text-gray-500 bg-blue-50 p-3 rounded-lg mt-6">
-          <p><strong>ℹ️ Informace:</strong></p>
-          <p>Výdaje se automaticky odčítají od celkové částky dostupné pro nepřihlášené hráče.</p>
-        </div>
-      )}
     </div>
   );
 }
