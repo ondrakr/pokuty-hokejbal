@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Hrac, Pokuta, HracSPokutami, Kategorie } from '../../types';
+import { Hrac, Pokuta, HracSPokutami, Kategorie, FinancniPrehled } from '../../types';
 import HraciSeznam from './HraciSeznam';
 import CenikPokut from './CenikPokut';
 import PridatPokutu from './PridatPokutu';
@@ -16,9 +16,10 @@ interface Props {
   isLoggedIn?: boolean;
   kategorie?: Kategorie;
   kategorieSlug?: string;
+  financniPrehled?: FinancniPrehled;
 }
 
-export default function EvidencePage({ initialHraci, initialPokuty, isLoggedIn = false, kategorie, kategorieSlug }: Props) {
+export default function EvidencePage({ initialHraci, initialPokuty, isLoggedIn = false, kategorie, kategorieSlug, financniPrehled }: Props) {
   const [hraci] = useState<Hrac[]>(initialHraci.map(h => ({ id: h.id, jmeno: h.jmeno, role: h.role, email: h.email })));
   const [pokuty] = useState<Pokuta[]>(initialPokuty);
   const [hraciSPokutami, setHraciSPokutami] = useState<HracSPokutami[]>(initialHraci);
@@ -115,25 +116,66 @@ export default function EvidencePage({ initialHraci, initialPokuty, isLoggedIn =
         <div className="p-4">
           <div className="bg-white rounded-xl shadow-md p-4 mb-4">
             <h2 className="font-bold text-gray-800 mb-3 text-center">📊 Přehled týmu</h2>
-            <div className="grid grid-cols-3 gap-4 text-center">
-              <div>
-                <div className="text-xs text-gray-500 mb-1">Celkem</div>
-                <div className="font-bold text-gray-900">
-                  {sortedHraci.reduce((sum, hrac) => sum + hrac.celkovaCastka, 0)} Kč
+            <div className="space-y-3">
+              {/* Současná situace s pokutami */}
+              <div className="grid grid-cols-3 gap-4 text-center">
+                <div>
+                  <div className="text-xs text-gray-500 mb-1">Celkem pokut</div>
+                  <div className="font-bold text-gray-900">
+                    {financniPrehled?.celkemPokuty || sortedHraci.reduce((sum, hrac) => sum + hrac.celkovaCastka, 0)} Kč
+                  </div>
+                </div>
+                <div>
+                  <div className="text-xs text-gray-500 mb-1">Zaplaceno</div>
+                  <div className="font-bold text-green-600">
+                    {financniPrehled?.celkemZaplaceno || sortedHraci.reduce((sum, hrac) => sum + hrac.zaplaceno, 0)} Kč
+                  </div>
+                </div>
+                <div>
+                  <div className="text-xs text-gray-500 mb-1">Zbývá doplatit</div>
+                  <div className="font-bold text-red-600">
+                    {financniPrehled?.celkemZbyva || sortedHraci.reduce((sum, hrac) => sum + hrac.zbyva, 0)} Kč
+                  </div>
                 </div>
               </div>
-              <div>
-                <div className="text-xs text-gray-500 mb-1">Zaplaceno</div>
-                <div className="font-bold text-green-600">
-                  {sortedHraci.reduce((sum, hrac) => sum + hrac.zaplaceno, 0)} Kč
+
+              {/* Finanční přehled pokladny */}
+              {financniPrehled && (
+                <div className="pt-3 border-t border-gray-200">
+                  <div className="grid grid-cols-2 gap-3 text-center text-sm mb-3">
+                    <div>
+                      <div className="text-xs text-gray-500 mb-1">Aktuální stav kasy</div>
+                      <div className={`font-bold ${
+                        (financniPrehled.pokladnaCastka + financniPrehled.celkemZaplaceno - financniPrehled.celkemVydaje) >= 0 
+                          ? 'text-green-600' 
+                          : 'text-red-600'
+                      }`}>
+                        {financniPrehled.pokladnaCastka + financniPrehled.celkemZaplaceno - financniPrehled.celkemVydaje} Kč
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-gray-500 mb-1">Celkové výdaje</div>
+                      <div className="font-bold text-red-500">
+                        {financniPrehled.celkemVydaje} Kč
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="text-center border-t pt-3">
+                    <div className="text-xs text-gray-500 mb-1">Kdyby všichni zaplatili</div>
+                    <div className={`font-bold text-lg rounded-lg py-2 ${
+                      (financniPrehled.pokladnaCastka + financniPrehled.celkemPokuty - financniPrehled.celkemVydaje) >= 0
+                        ? 'text-green-700 bg-green-50'
+                        : 'text-red-700 bg-red-50'
+                    }`}>
+                      {financniPrehled.pokladnaCastka + financniPrehled.celkemPokuty - financniPrehled.celkemVydaje} Kč
+                    </div>
+                    <div className="text-xs text-gray-400 mt-1">
+                      (Ručně přidáno + Všechny pokuty - Výdaje)
+                    </div>
+                  </div>
                 </div>
-              </div>
-              <div>
-                <div className="text-xs text-gray-500 mb-1">Zbývá</div>
-                <div className="font-bold text-red-600">
-                  {sortedHraci.reduce((sum, hrac) => sum + hrac.zbyva, 0)} Kč
-                </div>
-              </div>
+              )}
             </div>
           </div>
 
@@ -257,6 +299,7 @@ export default function EvidencePage({ initialHraci, initialPokuty, isLoggedIn =
                 onDataChange={handleDataChange} 
                 readOnly={!isLoggedIn}
                 onOpenPridatPokutu={isLoggedIn ? openPridatPokutuModal : undefined}
+                financniPrehled={financniPrehled}
               />
             </div>
           </div>

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { HracSPokutami, Hrac } from '../../types';
+import { HracSPokutami, Hrac, FinancniPrehled } from '../../types';
 import PlatebniModal from './PlatebniModal';
 
 interface Props {
@@ -9,9 +9,10 @@ interface Props {
   onDataChange: () => void;
   readOnly?: boolean;
   onOpenPridatPokutu?: (hrac: HracSPokutami) => void;
+  financniPrehled?: FinancniPrehled;
 }
 
-export default function HraciSeznam({ hraci, onDataChange, readOnly = false, onOpenPridatPokutu }: Props) {
+export default function HraciSeznam({ hraci, onDataChange, readOnly = false, onOpenPridatPokutu, financniPrehled }: Props) {
   const [rozbaleniHraci, setRozbaleniHraci] = useState<Set<number>>(new Set());
   const [platebniModal, setPlatebniModal] = useState<{
     isOpen: boolean;
@@ -245,31 +246,84 @@ export default function HraciSeznam({ hraci, onDataChange, readOnly = false, onO
         })}
       </div>
 
-      {/* Footer s celkovými součty */}
-      <div className="bg-gray-100 p-3">
-        <div className="flex justify-between items-center">
-          <span className="text-sm font-semibold text-gray-800">Celkem za tým:</span>
-          <div className="flex gap-4">
-            <div className="text-right">
-              <span className="text-xs text-gray-500">Celková částka: </span>
-              <span className="text-sm font-bold text-gray-900">
-                {hraci.reduce((sum, hrac) => sum + hrac.celkovaCastka, 0)} Kč
-              </span>
-            </div>
-            <div className="text-right">
-              <span className="text-xs text-gray-500">Zaplaceno: </span>
-              <span className="text-sm font-bold text-green-600">
-                {hraci.reduce((sum, hrac) => sum + hrac.zaplaceno, 0)} Kč
-              </span>
-            </div>
-            <div className="text-right">
-              <span className="text-xs text-gray-500">Zbývá: </span>
-              <span className="text-sm font-bold text-red-600">
-                {hraci.reduce((sum, hrac) => sum + hrac.zbyva, 0)} Kč
-              </span>
+      {/* Footer s finančním přehledem */}
+      <div className="bg-gray-100 p-4">
+        {financniPrehled ? (
+          <div className="flex justify-between items-center">
+            <span className="text-sm font-semibold text-gray-800">Přehled týmu:</span>
+            <div className="flex gap-4">
+              <div className="text-right">
+                <span className="text-xs text-gray-500">Celkem pokut: </span>
+                <span className="text-sm font-bold text-gray-900">
+                  {financniPrehled.celkemPokuty} Kč
+                </span>
+              </div>
+              <div className="text-right">
+                <span className="text-xs text-gray-500">Zaplaceno: </span>
+                <span className="text-sm font-bold text-green-600">
+                  {financniPrehled.celkemZaplaceno} Kč
+                </span>
+              </div>
+              <div className="text-right">
+                <span className="text-xs text-gray-500">Zbývá: </span>
+                <span className="text-sm font-bold text-red-600">
+                  {financniPrehled.celkemZbyva} Kč
+                </span>
+              </div>
+              <div className="text-right border-l pl-4">
+                <span className="text-xs text-gray-500">Stav kasy: </span>
+                <span className={`text-sm font-bold ${
+                  (financniPrehled.pokladnaCastka + financniPrehled.celkemZaplaceno - financniPrehled.celkemVydaje) >= 0 
+                    ? 'text-green-600' 
+                    : 'text-red-600'
+                }`}>
+                  {financniPrehled.pokladnaCastka + financniPrehled.celkemZaplaceno - financniPrehled.celkemVydaje} Kč
+                </span>
+              </div>
+              <div className="text-right">
+                <span className="text-xs text-gray-500">Výdaje: </span>
+                <span className="text-sm font-bold text-red-500">
+                  {financniPrehled.celkemVydaje} Kč
+                </span>
+              </div>
+              <div className="text-right">
+                <span className="text-xs text-gray-500">Kdyby všichni zaplatili: </span>
+                <span className={`text-sm font-bold ${
+                  (financniPrehled.pokladnaCastka + financniPrehled.celkemPokuty - financniPrehled.celkemVydaje) >= 0
+                    ? 'text-green-600'
+                    : 'text-red-600'
+                }`}>
+                  {financniPrehled.pokladnaCastka + financniPrehled.celkemPokuty - financniPrehled.celkemVydaje} Kč
+                </span>
+              </div>
             </div>
           </div>
-        </div>
+        ) : (
+          // Fallback pro případ, kdy není finanční přehled dostupný
+          <div className="flex justify-between items-center">
+            <span className="text-sm font-semibold text-gray-800">Celkem za tým:</span>
+            <div className="flex gap-4">
+              <div className="text-right">
+                <span className="text-xs text-gray-500">Celková částka: </span>
+                <span className="text-sm font-bold text-gray-900">
+                  {hraci.reduce((sum, hrac) => sum + hrac.celkovaCastka, 0)} Kč
+                </span>
+              </div>
+              <div className="text-right">
+                <span className="text-xs text-gray-500">Zaplaceno: </span>
+                <span className="text-sm font-bold text-green-600">
+                  {hraci.reduce((sum, hrac) => sum + hrac.zaplaceno, 0)} Kč
+                </span>
+              </div>
+              <div className="text-right">
+                <span className="text-xs text-gray-500">Zbývá: </span>
+                <span className="text-sm font-bold text-red-600">
+                  {hraci.reduce((sum, hrac) => sum + hrac.zbyva, 0)} Kč
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Platební modál */}

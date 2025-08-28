@@ -75,6 +75,36 @@ export async function GET(
       );
     }
 
+    // Načtení pokladny pro danou kategorii
+    const { data: pokladna, error: pokladnaError } = await supabase
+      .from('pokladna')
+      .select('*')
+      .eq('kategorie_id', kategorieId)
+      .single();
+
+    if (pokladnaError && pokladnaError.code !== 'PGRST116') {
+      console.error('Chyba při načítání pokladny:', pokladnaError);
+      return NextResponse.json(
+        { error: 'Chyba při načítání pokladny' },
+        { status: 500 }
+      );
+    }
+
+    // Načtení výdajů pro danou kategorii
+    const { data: vydaje, error: vydajeError } = await supabase
+      .from('vydaje')
+      .select('*')
+      .eq('kategorie_id', kategorieId)
+      .order('datum', { ascending: false });
+
+    if (vydajeError) {
+      console.error('Chyba při načítání výdajů:', vydajeError);
+      return NextResponse.json(
+        { error: 'Chyba při načítání výdajů' },
+        { status: 500 }
+      );
+    }
+
     // Propojení dat - vytvoření HracSPokutami objektů
     const hraciSPokutami: HracSPokutami[] = hraci.map(hrac => {
       const hracPokuty = pokuty.filter(pokuta => pokuta.hrac_id === hrac.id);
@@ -121,6 +151,16 @@ export async function GET(
       };
     });
 
+    // Kalkulace celkových sum a finančního přehledu
+    const celkemPokuty = hraciSPokutami.reduce((sum, hrac) => sum + hrac.celkovaCastka, 0);
+    const celkemZaplaceno = hraciSPokutami.reduce((sum, hrac) => sum + hrac.zaplaceno, 0);
+    const celkemZbyva = hraciSPokutami.reduce((sum, hrac) => sum + hrac.zbyva, 0);
+    const celkemVydaje = vydaje?.reduce((sum, vydaj) => sum + vydaj.castka, 0) || 0;
+    const pokladnaCastka = pokladna?.celkova_castka || 0;
+    
+    // Celková částka dostupná pro nepřihlášené (pokladna (ručně přidaná) + zaplacené pokuty - výdaje)
+    const dostupnaCastkaCelkem = pokladnaCastka + celkemZaplaceno - celkemVydaje;
+
     return NextResponse.json({
       hraci: hraciSPokutami,
       pokuty: pokuty.map(pokuta => ({
@@ -138,7 +178,28 @@ export async function GET(
         castka: platba.castka,
         datum: platba.datum,
         kategorieId: platba.kategorie_id
-      }))
+      })),
+      pokladna: pokladna ? {
+        id: pokladna.id,
+        kategorieId: pokladna.kategorie_id,
+        celkovaCastka: pokladna.celkova_castka,
+        popis: pokladna.popis
+      } : null,
+      vydaje: vydaje?.map(vydaj => ({
+        id: vydaj.id,
+        kategorieId: vydaj.kategorie_id,
+        castka: vydaj.castka,
+        popis: vydaj.popis,
+        datum: vydaj.datum
+      })) || [],
+      financniPrehled: {
+        celkemPokuty,
+        celkemZaplaceno,
+        celkemZbyva,
+        celkemVydaje,
+        pokladnaCastka,
+        dostupnaCastkaCelkem
+      }
     });
   } catch (error) {
     console.error('Chyba serveru:', error);

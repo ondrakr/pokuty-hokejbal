@@ -1,10 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Hrac, Pokuta, Kategorie, PrihlasenyUzivatel } from '../../types';
+import { Hrac, Pokuta, Kategorie, PrihlasenyUzivatel, FinancniPrehled } from '../../types';
 import SpravHracu from './SpravHracu';
 import SpravPokut from './SpravPokut';
+import SpravPokladny from './SpravPokladny';
+import SpravVydaju from './SpravVydaju';
 import MobileHeader from './MobileHeader';
 
 interface Props {
@@ -17,9 +19,17 @@ interface Props {
 }
 
 export default function AdminPage({ initialHraci, initialPokuty, kategorie, kategorieSlug, currentUser }: Props) {
-  const [activeTab, setActiveTab] = useState<'hraci' | 'pokuty'>('hraci');
+  const [activeTab, setActiveTab] = useState<'hraci' | 'pokuty' | 'pokladna' | 'vydaje'>('hraci');
   const [hraci, setHraci] = useState<Hrac[]>(initialHraci);
   const [pokuty, setPokuty] = useState<Pokuta[]>(initialPokuty);
+  const [financniPrehled, setFinancniPrehled] = useState<FinancniPrehled | undefined>();
+
+  // Načtení finančního přehledu při prvním zobrazení
+  useEffect(() => {
+    if (kategorie && kategorieSlug) {
+      handleDataRefresh();
+    }
+  }, [kategorieSlug, kategorie]);
 
   const handleDataRefresh = async () => {
     if (!kategorieSlug || !kategorie) return;
@@ -31,6 +41,7 @@ export default function AdminPage({ initialHraci, initialPokuty, kategorie, kate
         const data = await response.json();
         setHraci(data.hraci || []);
         setPokuty(data.pokuty || []);
+        setFinancniPrehled(data.financniPrehled);
       }
     } catch (error) {
       console.error('Chyba při načítání dat:', error);
@@ -66,26 +77,46 @@ export default function AdminPage({ initialHraci, initialPokuty, kategorie, kate
           </div>
 
           {/* Mobile Tab Buttons */}
-          <div className="grid grid-cols-2 gap-3 mb-4">
+          <div className="grid grid-cols-2 gap-2 mb-4">
             <button
               onClick={() => setActiveTab('hraci')}
-              className={`py-4 px-4 rounded-xl font-bold text-sm transition-all ${
+              className={`py-3 px-3 rounded-xl font-bold text-xs transition-all ${
                 activeTab === 'hraci'
                   ? 'bg-blue-600 text-white shadow-lg'
                   : 'bg-white text-gray-700 shadow-md'
               }`}
             >
-              👥 Správa hráčů
+              👥 Hráči
             </button>
             <button
               onClick={() => setActiveTab('pokuty')}
-              className={`py-4 px-4 rounded-xl font-bold text-sm transition-all ${
+              className={`py-3 px-3 rounded-xl font-bold text-xs transition-all ${
                 activeTab === 'pokuty'
                   ? 'bg-blue-600 text-white shadow-lg'
                   : 'bg-white text-gray-700 shadow-md'
               }`}
             >
-              📋 Správa pokut
+              📋 Pokuty
+            </button>
+            <button
+              onClick={() => setActiveTab('pokladna')}
+              className={`py-3 px-3 rounded-xl font-bold text-xs transition-all ${
+                activeTab === 'pokladna'
+                  ? 'bg-blue-600 text-white shadow-lg'
+                  : 'bg-white text-gray-700 shadow-md'
+              }`}
+            >
+              💰 Pokladna
+            </button>
+            <button
+              onClick={() => setActiveTab('vydaje')}
+              className={`py-3 px-3 rounded-xl font-bold text-xs transition-all ${
+                activeTab === 'vydaje'
+                  ? 'bg-blue-600 text-white shadow-lg'
+                  : 'bg-white text-gray-700 shadow-md'
+              }`}
+            >
+              💸 Výdaje
             </button>
           </div>
 
@@ -93,6 +124,8 @@ export default function AdminPage({ initialHraci, initialPokuty, kategorie, kate
           <div className="space-y-4">
             {activeTab === 'hraci' && <SpravHracu hraci={hraci} onDataChange={handleDataRefresh} kategorie={kategorie} />}
             {activeTab === 'pokuty' && <SpravPokut onDataChange={handleDataRefresh} kategorie={kategorie} />}
+            {activeTab === 'pokladna' && <SpravPokladny kategorie={kategorie} onDataChange={handleDataRefresh} financniPrehled={financniPrehled} />}
+            {activeTab === 'vydaje' && <SpravVydaju kategorie={kategorie} onDataChange={handleDataRefresh} />}
           </div>
 
 
@@ -159,6 +192,26 @@ export default function AdminPage({ initialHraci, initialPokuty, kategorie, kate
                 >
                   📋 Správa pokut
                 </button>
+                <button
+                  onClick={() => setActiveTab('pokladna')}
+                  className={`px-6 py-3 text-sm font-medium ${
+                    activeTab === 'pokladna'
+                      ? 'border-b-2 border-blue-500 text-blue-600'
+                      : 'text-gray-500 hover:text-gray-700'
+                  }`}
+                >
+                  💰 Správa pokladny
+                </button>
+                <button
+                  onClick={() => setActiveTab('vydaje')}
+                  className={`px-6 py-3 text-sm font-medium ${
+                    activeTab === 'vydaje'
+                      ? 'border-b-2 border-blue-500 text-blue-600'
+                      : 'text-gray-500 hover:text-gray-700'
+                  }`}
+                >
+                  💸 Správa výdajů
+                </button>
               </nav>
             </div>
 
@@ -166,6 +219,8 @@ export default function AdminPage({ initialHraci, initialPokuty, kategorie, kate
             <div className="p-6">
               {activeTab === 'hraci' && <SpravHracu hraci={hraci} onDataChange={handleDataRefresh} kategorie={kategorie} />}
               {activeTab === 'pokuty' && <SpravPokut onDataChange={handleDataRefresh} kategorie={kategorie} />}
+              {activeTab === 'pokladna' && <SpravPokladny kategorie={kategorie} onDataChange={handleDataRefresh} financniPrehled={financniPrehled} />}
+              {activeTab === 'vydaje' && <SpravVydaju kategorie={kategorie} onDataChange={handleDataRefresh} />}
             </div>
 
 

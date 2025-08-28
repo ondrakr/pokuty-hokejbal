@@ -56,6 +56,30 @@ export interface PrihlasenyUzivatel extends Uzivatel {
   kategorie?: Kategorie;
 }
 
+export interface Pokladna {
+  id: number;
+  kategorieId: number;
+  celkovaCastka: number;
+  popis?: string;
+}
+
+export interface Vydaj {
+  id: number;
+  kategorieId: number;
+  castka: number;
+  popis: string;
+  datum: string;
+}
+
+export interface FinancniPrehled {
+  celkemPokuty: number;
+  celkemZaplaceno: number;
+  celkemZbyva: number;
+  celkemVydaje: number;
+  pokladnaCastka: number;
+  dostupnaCastkaCelkem: number;
+}
+
 export interface HracSPokutami extends Hrac {
   pokuty: Pokuta[];
   platby: Platba[];
