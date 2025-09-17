@@ -22,7 +22,7 @@ interface Props {
 }
 
 export default function EvidencePage({ initialHraci, initialPokuty, isLoggedIn = false, kategorie, kategorieSlug, financniPrehled, vydaje = [] }: Props) {
-  const [hraci] = useState<Hrac[]>(initialHraci.map(h => ({ id: h.id, jmeno: h.jmeno, role: h.role, email: h.email })));
+  const [hraci] = useState<Hrac[]>(initialHraci.map(h => ({ id: h.id, jmeno: h.jmeno, role: h.role, email: h.email, kategorieId: h.kategorieId })));
   const [pokuty] = useState<Pokuta[]>(initialPokuty);
   const [hraciSPokutami, setHraciSPokutami] = useState<HracSPokutami[]>(initialHraci);
   const [showPriceList, setShowPriceList] = useState(false);
@@ -39,10 +39,10 @@ export default function EvidencePage({ initialHraci, initialPokuty, isLoggedIn =
   const [showQRModal, setShowQRModal] = useState(false);
   const [pridatPokutuModal, setPridatPokutuModal] = useState<{
     isOpen: boolean;
-    predvybranyHrac: Hrac | null;
+    predvybranyHrac: Hrac | undefined;
   }>({
     isOpen: false,
-    predvybranyHrac: null
+    predvybranyHrac: undefined
   });
 
   // Data už máme připravená z API, nemusíme nic přepočítávat
@@ -84,7 +84,8 @@ export default function EvidencePage({ initialHraci, initialPokuty, isLoggedIn =
       id: hracSPokutami.id,
       jmeno: hracSPokutami.jmeno,
       role: hracSPokutami.role,
-      email: hracSPokutami.email
+      email: hracSPokutami.email,
+      kategorieId: hracSPokutami.kategorieId
     };
     setPridatPokutuModal({
       isOpen: true,
@@ -95,7 +96,7 @@ export default function EvidencePage({ initialHraci, initialPokuty, isLoggedIn =
   const closePridatPokutuModal = () => {
     setPridatPokutuModal({
       isOpen: false,
-      predvybranyHrac: null
+      predvybranyHrac: undefined
     });
   };
 
@@ -172,9 +173,6 @@ export default function EvidencePage({ initialHraci, initialPokuty, isLoggedIn =
                         : 'text-red-700 bg-red-50'
                     }`}>
                       {financniPrehled.pokladnaCastka + financniPrehled.celkemPokuty - financniPrehled.celkemVydaje} Kč
-                    </div>
-                    <div className="text-xs text-gray-400 mt-1">
-                      (Ručně přidáno + Všechny pokuty - Výdaje)
                     </div>
                   </div>
                 </div>
