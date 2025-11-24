@@ -1,27 +1,49 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '../../../lib/supabase';
+import { supabase, SUPABASE_URL_INFERRED } from '../../../lib/supabase';
 
 export async function GET() {
   try {
+    console.log('Načítám kategorie ze Supabase URL:', SUPABASE_URL_INFERRED)
     const { data: kategorie, error } = await supabase
       .from('kategorie')
       .select('*')
       .order('poradi');
 
     if (error) {
-      console.error('Chyba při načítání kategorií:', error);
+      console.error('Chyba při načítání kategorií:', {
+        message: (error as any)?.message,
+        code: (error as any)?.code,
+        hint: (error as any)?.hint,
+        details: (error as any)?.details,
+      });
+      const code = (error as any)?.code as string | undefined
+      const status = code === 'PGRST301' || code === 'PGRST302' ? 401 : 500
       return NextResponse.json(
-        { error: 'Chyba při načítání kategorií', details: error },
-        { status: 500 }
+        {
+          error: 'Chyba při načítání kategorií',
+          details: {
+            message: (error as any)?.message,
+            code: (error as any)?.code,
+            hint: (error as any)?.hint,
+          },
+        },
+        { status }
       );
     }
 
     return NextResponse.json(kategorie || []);
   } catch (error) {
-    console.error('Chyba serveru:', error);
+    const err = error as any
+    console.error('Chyba serveru při načítání kategorií:', {
+      message: err?.message,
+      stack: err?.stack,
+      cause: err?.cause,
+    });
+    // Pokud jde o problém s připojením (undici fetch failed), vrať 502
+    const isUpstreamFetchFailed = typeof err?.message === 'string' && err.message.includes('fetch failed')
     return NextResponse.json(
-      { error: 'Chyba serveru' },
-      { status: 500 }
+      { error: 'Chyba serveru', details: { message: err?.message } },
+      { status: isUpstreamFetchFailed ? 502 : 500 }
     );
   }
 }
