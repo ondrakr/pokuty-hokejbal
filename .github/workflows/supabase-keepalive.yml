@@ -1,0 +1,29 @@
+name: Supabase keepalive
+
+on:
+  schedule:
+    # Dvakrát denně — Free projekt se pauzne po ~7 dnech bez DB aktivity.
+    - cron: '0 6,18 * * *'
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase
+        env:
+          SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+        run: |
+          set -euo pipefail
+          if [ -z "${SUPABASE_URL:-}" ] || [ -z "${SUPABASE_ANON_KEY:-}" ]; then
+            echo "Chybí GitHub secrets NEXT_PUBLIC_SUPABASE_URL a NEXT_PUBLIC_SUPABASE_ANON_KEY."
+            echo "Repo → Settings → Secrets and variables → Actions."
+            exit 1
+          fi
+          curl -fsS "${SUPABASE_URL%/}/rest/v1/kategorie?select=id&limit=1" \
+            -H "apikey: ${SUPABASE_ANON_KEY}" \
+            -H "Authorization: Bearer ${SUPABASE_ANON_KEY}" \
+            -H "Accept: application/json"
+          echo
+          echo "OK"
